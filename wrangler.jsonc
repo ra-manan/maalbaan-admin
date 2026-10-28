@@ -1,7 +1,7 @@
 {
-  // Static hosting for the admin panel. Attach the custom domain manage.maalbaan.com in
-  // Workers > maalbaan-admin > Settings > Domains & Routes.
+  // Static hosting for the admin panel, served at manage.maalbaan.com.
   "name": "maalbaan-admin",
+  "routes": [{ "pattern": "manage.maalbaan.com", "custom_domain": true }],
   "compatibility_date": "2026-10-01",
   "workers_dev": false,
   "preview_urls": false,
