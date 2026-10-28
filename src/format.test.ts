@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMonths, ago, dateText, licenseBadge, phoneText, pkr, whatsappDigits } from './format';
+import { addMonths, ago, dateText, feeStatus, licenseBadge, phoneText, pkr, whatsappDigits } from './format';
 
 describe('format', () => {
   it('writes money and dates the Maalban way', () => {
@@ -33,5 +33,17 @@ describe('format', () => {
     expect(addMonths('2026-01-31', 1)).toBe('2026-02-28');
     expect(addMonths('2026-11-15', 12)).toBe('2027-11-15');
     expect(addMonths('2026-12-31', 2)).toBe('2027-02-28');
+  });
+});
+
+describe('feeStatus', () => {
+  const created = Date.parse('2026-10-10T08:00:00Z');
+  it('needs no monthly fee in the first month', () => {
+    expect(feeStatus(created, [], '2026-10-29')).toEqual({ licensePaidOn: null, monthlyPaid: false, monthlyStarted: false });
+  });
+  it('wants a monthly fee in later months until one is paid', () => {
+    const lic = { kind: 'license', paid_on: '2026-10-10' };
+    expect(feeStatus(created, [lic], '2026-11-03')).toEqual({ licensePaidOn: '2026-10-10', monthlyPaid: false, monthlyStarted: true });
+    expect(feeStatus(created, [lic, { kind: 'monthly', paid_on: '2026-11-02' }], '2026-11-03').monthlyPaid).toBe(true);
   });
 });

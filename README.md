@@ -10,13 +10,13 @@ It never shows a dealer's invoices or customers: the API behind it does not hold
 |---|---|
 | Dashboard | Active, expiring, read-only and suspended accounts; monthly recurring revenue; payments and new accounts per month; computers connected; new demo requests; renewals due in 30 days; accounts by plan; recent activity |
 | Accounts | All accounts with filters (All, Active, Suspended, Expiring, Read-only, Trial) and search; **New account** |
-| Account detail | Licence and plan, contact, payments, connected computers. Edit details, **Record payment** (optionally extends the licence date), **Activation code** (shown once, WhatsApp link), **Suspend / Reactivate**, remove a computer |
+| Account detail | Licence and plan, contact, payments, connected computers. Edit details, **Record payment** (licence fee, monthly fee or other, pre-filled from the plan; optionally extends the licence date; the page shows whether the licence fee is paid and the monthly fee is due), **Activation code** (shown once, WhatsApp link), **Suspend / Reactivate**, remove a computer |
 | Demo requests | Requests from the website form. Set status, add notes, **Create trial account** (14 days) |
 | Plans and prices | Owner sets a one-time licence fee and a monthly fee (empty until decided) and can switch a plan off; monthly fees feed MRR |
 | Staff (owner) | Add people, set a new password, pause a login |
 | Activity log | Who did what |
 
-Suspending an account reaches the desktop app through the signed licence (the app locks on its next check, no grace days). Plan, billing and notes are for your team; the app only reads the end date, grace days and the paused flag.
+Suspending an account reaches the desktop app through the signed licence (the app locks on its next check, no grace days). Plan and notes are for your team; the app only reads the end date, grace days and the paused flag.
 
 ## Run it locally
 

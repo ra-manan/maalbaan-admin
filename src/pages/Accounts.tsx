@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, type Account } from '../api';
-import { ago, BILLING_NAMES, dateText, licenseBadge, planName } from '../format';
+import { ago, dateText, licenseBadge, planName } from '../format';
 import { Page } from '../Shell';
 import { Alert, Badge, Dialog, Empty, Field, Icon, LoadState, useLoad, useSave } from '../ui';
 
@@ -77,7 +77,7 @@ export function Accounts() {
                         <span className="cell-name"><Link to={`/accounts/${d.id}`}>{d.name}</Link></span>
                         <span className="caption">{[d.city, d.ownerName].filter(Boolean).join(' · ') || 'No details yet'}</span>
                       </td>
-                      <td>{planName(d.plan)}<span className="caption">{BILLING_NAMES[d.billing]}</span></td>
+                      <td>{planName(d.plan)}</td>
                       <td className="num">{d.deviceCount}</td>
                       <td><Badge tone={b.tone}>{b.text}</Badge><span className="caption">until {dateText(d.licenseValidUntil)}</span></td>
                       <td>{ago(d.lastSeenAt)}</td>
@@ -100,7 +100,7 @@ function NewAccountDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const plans = useLoad(api.plans, []);
   const save = useSave();
-  const [f, setF] = useState({ name: '', ownerName: '', phone: '', city: '', email: '', plan: 'standard', billing: 'license' as 'license' | 'monthly', until: '' });
+  const [f, setF] = useState({ name: '', ownerName: '', phone: '', city: '', email: '', plan: 'standard', until: '' });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
 
   function submit(e: FormEvent) {
@@ -113,7 +113,6 @@ function NewAccountDialog({ onClose }: { onClose: () => void }) {
         city: f.city || null,
         email: f.email || null,
         plan: f.plan,
-        billing: f.billing,
         ...(f.until ? { licenseValidUntil: f.until } : {}),
       });
       navigate(`/accounts/${made.dealer.id}`);
@@ -135,14 +134,6 @@ function NewAccountDialog({ onClose }: { onClose: () => void }) {
             {(id) => (
               <select id={id} className="sel" value={f.plan} onChange={set('plan')}>
                 {(plans.data?.plans.filter((p) => p.enabled) ?? [{ id: 'standard', name: 'Standard' }]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            )}
-          </Field>
-          <Field label="Billing">
-            {(id) => (
-              <select id={id} className="sel" value={f.billing} onChange={set('billing')}>
-                <option value="license">Licence</option>
-                <option value="monthly">Monthly subscription</option>
               </select>
             )}
           </Field>

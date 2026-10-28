@@ -9,7 +9,7 @@ export function Plans() {
   const { admin } = useAuth();
   const state = useLoad(api.plans, []);
   return (
-    <Page title="Plans and prices" sub={admin.role === 'owner' ? 'Monthly prices feed the monthly revenue figure on the dashboard' : 'Only an owner can change prices'}>
+    <Page title="Plans and prices" sub={admin.role === 'owner' ? 'Monthly fees feed the monthly revenue figure on the dashboard' : 'Only an owner can change prices'}>
       <LoadState state={state}>
         <div className="mb-table-wrap tbl-scroll">
           <table className="mb-table">

@@ -18,7 +18,6 @@ export interface Account {
   email: string | null;
   city: string | null;
   plan: string;
-  billing: 'license' | 'monthly';
   notes: string | null;
   status: 'active' | 'suspended';
   suspendedReason: string | null;
@@ -42,6 +41,7 @@ export interface Device {
 export interface Payment {
   id: string;
   amount_pkr: number;
+  kind: string;
   method: string;
   reference: string | null;
   paid_on: string;
@@ -163,7 +163,6 @@ export interface AccountInput {
   email?: string | null;
   city?: string | null;
   plan?: string;
-  billing?: 'license' | 'monthly';
   notes?: string | null;
   licenseValidUntil?: string;
   graceDays?: number;
@@ -195,7 +194,7 @@ export const api = {
   createAccount: (input: AccountInput) => post<AccountDetail>('/dealers', input),
   updateAccount: (id: string, input: AccountInput) => patch<AccountDetail>(`/dealers/${id}`, input),
   issueCode: (id: string, days: number) => post<{ code: string; expiresAt: number }>(`/dealers/${id}/activation-codes`, { days }),
-  recordPayment: (id: string, input: { amountPkr: number; method: string; paidOn?: string; reference?: string; note?: string; extendLicenseTo?: string }) =>
+  recordPayment: (id: string, input: { amountPkr: number; kind: string; method: string; paidOn?: string; reference?: string; note?: string; extendLicenseTo?: string }) =>
     post<AccountDetail>(`/dealers/${id}/payments`, input),
   removeDevice: (id: string) => post<{ ok: true }>(`/devices/${id}/revoke`),
 

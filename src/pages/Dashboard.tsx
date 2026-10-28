@@ -20,7 +20,7 @@ function Content({ o }: { o: Overview }) {
   const maxPaid = Math.max(...o.revenue.months.map((m) => m.paidPkr), 1);
   const maxNew = Math.max(...o.revenue.months.map((m) => m.newAccounts), 1);
   const thisMonth = o.revenue.months.at(-1)!;
-  const pricedNote = o.revenue.unpricedMonthly > 0 ? `${o.revenue.unpricedMonthly} monthly ${o.revenue.unpricedMonthly === 1 ? 'account has' : 'accounts have'} no plan price yet` : 'Monthly accounts that are working';
+  const pricedNote = o.revenue.unpricedMonthly > 0 ? `${o.revenue.unpricedMonthly} ${o.revenue.unpricedMonthly === 1 ? 'account has' : 'accounts have'} no plan price yet` : 'Accounts that are working';
 
   return (
     <>

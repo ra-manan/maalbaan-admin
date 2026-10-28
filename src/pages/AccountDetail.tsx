@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, type AccountDetail as Detail, type AccountInput } from '../api';
-import { addMonths, ago, BILLING_NAMES, dateText, dayTime, licenseBadge, PAYMENT_METHODS, phoneText, pkr, planName, whatsappDigits } from '../format';
+import { addMonths, ago, dateText, dayTime, feeStatus, licenseBadge, PAYMENT_KINDS, PAYMENT_METHODS, phoneText, pkr, planName, whatsappDigits } from '../format';
 import { Page } from '../Shell';
 import { Alert, Badge, Dialog, Empty, Field, Icon, LoadState, messageOf, useCopy, useLoad, useSave } from '../ui';
 
@@ -33,6 +33,7 @@ export function AccountDetail() {
 
   const a = d.dealer;
   const b = licenseBadge(a.license, a.plan === 'trial');
+  const fees = feeStatus(a.createdAt, d.payments, new Date(Date.now() + 5 * 3_600_000).toISOString().slice(0, 10));
   const suspended = a.status === 'suspended';
 
   return (
@@ -73,9 +74,10 @@ export function AccountDetail() {
             </div>
             <dl className="kv">
               <dt>Plan</dt><dd>{planName(a.plan)}{d.plan ? ` · up to ${d.plan.max_users} users` : ''}</dd>
-              <dt>Billing</dt><dd>{BILLING_NAMES[a.billing]}</dd>
               <dt>Valid until</dt><dd>{dateText(a.licenseValidUntil)}</dd>
               <dt>Grace period</dt><dd>{a.graceDays} {a.graceDays === 1 ? 'day' : 'days'}</dd>
+              <dt>Licence fee</dt><dd>{fees.licensePaidOn ? `Paid on ${dateText(fees.licensePaidOn)}` : d.plan?.license_fee_pkr == null ? <span className="muted">Due, plan price not set</span> : `Due · ${pkr(d.plan.license_fee_pkr)}`}</dd>
+              <dt>Monthly fee</dt><dd>{fees.monthlyPaid ? 'Paid this month' : !fees.monthlyStarted ? <span className="muted">Starts next month</span> : d.plan?.monthly_price_pkr == null ? <span className="muted">Due, plan price not set</span> : `Due · ${pkr(d.plan.monthly_price_pkr)}`}</dd>
               <dt>Last payment</dt><dd>{a.lastPaidOn ? dateText(a.lastPaidOn) : 'None recorded'}</dd>
               <dt>Account id</dt><dd className="mono">{a.id}</dd>
             </dl>
@@ -88,11 +90,12 @@ export function AccountDetail() {
             ) : (
               <div className="tbl-scroll">
                 <table className="mb-table">
-                  <thead><tr><th>Date</th><th className="num">Amount</th><th>Method</th><th>Reference</th><th>Recorded by</th></tr></thead>
+                  <thead><tr><th>Date</th><th>For</th><th className="num">Amount</th><th>Method</th><th>Reference</th><th>Recorded by</th></tr></thead>
                   <tbody>
                     {d.payments.map((p) => (
                       <tr key={p.id}>
                         <td>{dateText(p.paid_on)}</td>
+                        <td>{PAYMENT_KINDS[p.kind] ?? p.kind}</td>
                         <td className="num"><span className="mb-money mb-money--in">{pkr(p.amount_pkr)}</span></td>
                         <td>{PAYMENT_METHODS[p.method] ?? p.method}</td>
                         <td>{p.reference ?? <span className="muted">—</span>}{p.note && <span className="caption">{p.note}</span>}</td>
@@ -190,7 +193,7 @@ function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; o
   const save = useSave();
   const [f, setF] = useState({
     name: a.name, ownerName: a.ownerName ?? '', phone: a.phone ?? '', email: a.email ?? '', city: a.city ?? '', notes: a.notes ?? '',
-    plan: a.plan, billing: a.billing, until: a.licenseValidUntil, grace: String(a.graceDays),
+    plan: a.plan, until: a.licenseValidUntil, grace: String(a.graceDays),
   });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
 
@@ -199,7 +202,7 @@ function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; o
     const input: AccountInput = {
       name: f.name, ownerName: f.ownerName || null, phone: f.phone || null, email: f.email || null, city: f.city || null, notes: f.notes || null,
       // Left out when unchanged, so an account can stay on a plan that has since been switched off.
-      plan: f.plan === a.plan ? undefined : f.plan, billing: f.billing, licenseValidUntil: f.until, graceDays: Number(f.grace),
+      plan: f.plan === a.plan ? undefined : f.plan, licenseValidUntil: f.until, graceDays: Number(f.grace),
     };
     void save.run(async () => onSaved(await api.updateAccount(a.id, input)));
   }
@@ -219,14 +222,6 @@ function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; o
             {(id) => (
               <select id={id} className="sel" value={f.plan} onChange={set('plan')}>
                 {(plans.data?.plans.filter((p) => p.enabled || p.id === a.plan) ?? [{ id: f.plan, name: planName(f.plan) }]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            )}
-          </Field>
-          <Field label="Billing">
-            {(id) => (
-              <select id={id} className="sel" value={f.billing} onChange={set('billing')}>
-                <option value="license">Licence</option>
-                <option value="monthly">Monthly subscription</option>
               </select>
             )}
           </Field>
@@ -250,21 +245,27 @@ function PaymentDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void
   const a = d.dealer;
   const save = useSave();
   const today = new Date(Date.now() + 5 * 3_600_000).toISOString().slice(0, 10);
-  const [f, setF] = useState({ amount: '', method: 'cash', paidOn: today, reference: '', note: '', extend: '' });
+  const fee = (kind: string) => String((kind === 'license' ? d.plan?.license_fee_pkr : kind === 'monthly' ? d.plan?.monthly_price_pkr : null) ?? '');
+  const [f, setF] = useState({ amount: fee('license'), kind: 'license', method: 'cash', paidOn: today, reference: '', note: '', extend: '' });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
+  // Picking what the money is for fills in the plan's price, which can still be changed.
+  const setKind = (e: { target: { value: string } }) => setF({ ...f, kind: e.target.value, amount: fee(e.target.value) });
   // Renewing from the later of today and the current end date, so paying early never loses days.
   const base = a.licenseValidUntil > today ? a.licenseValidUntil : today;
 
   function submit(e: FormEvent) {
     e.preventDefault();
     void save.run(async () =>
-      onSaved(await api.recordPayment(a.id, { amountPkr: Number(f.amount), method: f.method, paidOn: f.paidOn, reference: f.reference || undefined, note: f.note || undefined, extendLicenseTo: f.extend || undefined })),
+      onSaved(await api.recordPayment(a.id, { amountPkr: Number(f.amount), kind: f.kind, method: f.method, paidOn: f.paidOn, reference: f.reference || undefined, note: f.note || undefined, extendLicenseTo: f.extend || undefined })),
     );
   }
 
   return (
     <Dialog title="Record a payment" onClose={onClose}>
       <form className="col" onSubmit={submit}>
+        <Field label="This payment is for">
+          {(id) => <select id={id} className="sel" value={f.kind} onChange={setKind}>{Object.entries(PAYMENT_KINDS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>}
+        </Field>
         <div className="form-row">
           <Field label="Amount (PKR)">{(id) => <input id={id} className="mb-input num" type="number" min={1} step={1} inputMode="numeric" value={f.amount} onChange={set('amount')} required />}</Field>
           <Field label="Paid on">{(id) => <input id={id} className="mb-input" type="date" value={f.paidOn} onChange={set('paidOn')} required />}</Field>

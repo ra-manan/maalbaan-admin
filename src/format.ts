@@ -61,7 +61,6 @@ export function licenseBadge(l: License, trial = false): { text: string; tone: T
 export const PLAN_NAMES: Record<string, string> = { trial: 'Trial', standard: 'Standard', pro: 'Pro' };
 export const planName = (id: string) => PLAN_NAMES[id] ?? id;
 
-export const BILLING_NAMES = { license: 'Licence', monthly: 'Monthly subscription' } as const;
 
 export const DEMO_STATUS: Record<DemoStatus, { label: string; tone: Tone }> = {
   new: { label: 'New', tone: 'warning' },
@@ -114,4 +113,18 @@ export function addMonths(iso: string, months: number): string {
   const month = ((total % 12) + 12) % 12;
   const last = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`;
+}
+
+export const PAYMENT_KINDS: Record<string, string> = { license: 'Licence fee', monthly: 'Monthly fee', other: 'Other' };
+
+/**
+ * Where an account stands on its fees. The licence fee is paid once and covers the first month; the monthly fee
+ * is due in every later calendar month (Pakistan time) until a monthly payment is recorded in that month.
+ */
+export function feeStatus(createdAt: number, payments: { kind: string; paid_on: string }[], today: string) {
+  const licensePaidOn = payments.filter((p) => p.kind === 'license').map((p) => p.paid_on).sort().at(-1) ?? null;
+  const thisMonth = today.slice(0, 7);
+  const startedIn = new Date(createdAt + 5 * 3_600_000).toISOString().slice(0, 7);
+  const monthlyPaid = payments.some((p) => p.kind === 'monthly' && p.paid_on.slice(0, 7) === thisMonth);
+  return { licensePaidOn, monthlyPaid, monthlyStarted: thisMonth > startedIn };
 }
