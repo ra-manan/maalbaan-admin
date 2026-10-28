@@ -12,7 +12,7 @@ It never shows a dealer's invoices or customers: the API behind it does not hold
 | Accounts | All accounts with filters (All, Active, Suspended, Expiring, Read-only, Trial) and search; **New account** |
 | Account detail | Licence and plan, contact, payments, connected computers. Edit details, **Record payment** (optionally extends the licence date), **Activation code** (shown once, WhatsApp link), **Suspend / Reactivate**, remove a computer |
 | Demo requests | Requests from the website form. Set status, add notes, **Create trial account** (14 days) |
-| Plans and prices | Owner sets monthly and yearly prices (empty until decided); they feed MRR |
+| Plans and prices | Owner sets a one-time licence fee and a monthly fee (empty until decided) and can switch a plan off; monthly fees feed MRR |
 | Staff (owner) | Add people, set a new password, pause a login |
 | Activity log | Who did what |
 

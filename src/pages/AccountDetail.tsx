@@ -198,7 +198,8 @@ function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; o
     e.preventDefault();
     const input: AccountInput = {
       name: f.name, ownerName: f.ownerName || null, phone: f.phone || null, email: f.email || null, city: f.city || null, notes: f.notes || null,
-      plan: f.plan, billing: f.billing, licenseValidUntil: f.until, graceDays: Number(f.grace),
+      // Left out when unchanged, so an account can stay on a plan that has since been switched off.
+      plan: f.plan === a.plan ? undefined : f.plan, billing: f.billing, licenseValidUntil: f.until, graceDays: Number(f.grace),
     };
     void save.run(async () => onSaved(await api.updateAccount(a.id, input)));
   }
@@ -217,7 +218,7 @@ function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; o
           <Field label="Plan">
             {(id) => (
               <select id={id} className="sel" value={f.plan} onChange={set('plan')}>
-                {(plans.data?.plans ?? [{ id: f.plan, name: planName(f.plan) }]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {(plans.data?.plans.filter((p) => p.enabled || p.id === a.plan) ?? [{ id: f.plan, name: planName(f.plan) }]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             )}
           </Field>

@@ -54,8 +54,11 @@ export interface Plan {
   id: string;
   name: string;
   max_users: number;
+  /** One-time licensing fee; empty until decided. */
+  license_fee_pkr: number | null;
   monthly_price_pkr: number | null;
-  yearly_price_pkr: number | null;
+  /** A switched-off plan keeps its accounts but cannot be given to new ones. */
+  enabled: boolean;
 }
 
 export type DemoStatus = 'new' | 'contacted' | 'scheduled' | 'converted' | 'not_interested' | 'spam';
@@ -201,7 +204,7 @@ export const api = {
   convertDemo: (id: string) => post<{ dealerId: string }>(`/demo-requests/${id}/convert`),
 
   plans: () => get<{ plans: Plan[] }>('/plans'),
-  updatePlan: (id: string, input: { monthlyPricePkr?: number | null; yearlyPricePkr?: number | null }) => patch<{ plans: Plan[] }>(`/plans/${id}`, input),
+  updatePlan: (id: string, input: { licenseFeePkr?: number | null; monthlyPricePkr?: number | null; enabled?: boolean }) => patch<{ plans: Plan[] }>(`/plans/${id}`, input),
 
   staff: () => get<{ staff: Staff[] }>('/staff'),
   createStaff: (input: { email: string; name: string; password: string }) => post<{ id: string }>('/staff', input),

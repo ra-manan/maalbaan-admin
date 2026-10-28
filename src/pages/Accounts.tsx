@@ -134,7 +134,7 @@ function NewAccountDialog({ onClose }: { onClose: () => void }) {
           <Field label="Plan">
             {(id) => (
               <select id={id} className="sel" value={f.plan} onChange={set('plan')}>
-                {(plans.data?.plans ?? [{ id: 'standard', name: 'Standard' }]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {(plans.data?.plans.filter((p) => p.enabled) ?? [{ id: 'standard', name: 'Standard' }]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             )}
           </Field>
