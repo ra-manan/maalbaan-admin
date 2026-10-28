@@ -43,7 +43,7 @@ Checks: `npm run typecheck`, `npm test`, `npm run build`.
 
 1. **API** (Maalbaan Project/server): `npm run migrate` (applies `0003_admin_panel.sql` to the real database), then `npm run deploy`. `ADMIN_ORIGINS` is already `https://manage.maalbaan.com` in `wrangler.toml`. The API must be reachable at `https://api.maalbaan.com`.
 2. **First owner**: run the curl above against `https://api.maalbaan.com` with the real `ADMIN_TOKEN`. Then use Staff in the panel to add everyone else.
-3. **Panel**: `npm run deploy` (builds, then publishes `dist` as the Cloudflare Worker `maalbaan-admin`). In Cloudflare, open Workers, `maalbaan-admin`, Settings, Domains and Routes, and add the custom domain `manage.maalbaan.com`.
+3. **Panel**: `npm run deploy` (builds, then publishes `dist` as the Cloudflare Worker `maalbaan-admin`). The custom domain `manage.maalbaan.com` is attached by the `routes` entry in `wrangler.jsonc`, so no dashboard step is needed.
 4. **Website**: rebuild and deploy it. `Maalbaan website/.env.production` already points the demo form at `https://api.maalbaan.com/v1/demo-requests`.
 
 The sign-in cookie is `HttpOnly`, `Secure` and `SameSite=Strict`, set by `api.maalbaan.com` and sent from `manage.maalbaan.com` (same site). Writes are accepted only with an `Origin` of the panel. A login pauses for 15 minutes after 5 wrong passwords; a session lasts 12 hours.
