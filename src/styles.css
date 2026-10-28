@@ -1,0 +1,45 @@
+/* Admin-only additions on top of the Maalban design kit. Tokens only. */
+html, body { margin: 0; background: var(--bg); }
+body { font-family: var(--font-sans); color: var(--ink); }
+a { color: var(--brand); }
+a:hover { color: var(--brand-dark); }
+.app { min-height: 100vh; }
+.side { position: sticky; top: 0; align-self: flex-start; min-height: 100vh; box-sizing: border-box; }
+@media (max-width: 900px) { .side { position: static; min-height: 0; } .topbar, .page { padding-inline: var(--space-4); } }
+
+.user-text { display: flex; flex-direction: column; }
+.actions { justify-content: flex-end; }
+.page-section { display: flex; flex-direction: column; gap: var(--space-4); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: var(--space-5); align-items: start; }
+.mb-input, .sel { box-sizing: border-box; max-width: 100%; }
+textarea.mb-input { padding-block: var(--space-2); min-height: 88px; resize: vertical; }
+.mb-table td .caption { display: block; }
+.cell-name { font-weight: 600; }
+.cell-name a { color: var(--ink); text-decoration: none; }
+.cell-name a:hover { color: var(--brand-dark); text-decoration: underline; }
+.cell-name a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.mb-table td.num, .mb-table th.num { text-align: right; }
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; justify-content: space-between; }
+.toolbar .search { flex: 0 1 320px; }
+.keyout { font: 600 22px/32px ui-monospace, Consolas, monospace; letter-spacing: 2px; padding: var(--space-3) var(--space-4); background: var(--bg);
+  border: 1px solid var(--line); border-radius: var(--radius-md); word-break: break-all; }
+.mono { font-family: ui-monospace, Consolas, monospace; }
+.muted { color: var(--slate); }
+.sel { max-width: 100%; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: var(--space-4); }
+.inline-sel { min-height: 36px; padding: 0 var(--space-2); font-size: 14px; }
+.chart-wrap { display: grid; gap: var(--space-2); }
+.bar__val { white-space: nowrap; }
+.bar__fill { min-height: 2px; }
+.bar__fill.is-alt { background: var(--accent); }
+.legend { display: flex; gap: var(--space-4); flex-wrap: wrap; font: 400 13px/18px var(--font-sans); color: var(--slate); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-inline-end: 6px; background: var(--brand-dark); }
+.legend i.alt { background: var(--accent); }
+.plan-row { display: grid; gap: var(--space-1); padding: var(--space-2) 0; }
+.plan-row .row-c { justify-content: space-between; }
+
+.login { min-height: 100vh; display: grid; place-items: center; padding: var(--space-5); background: var(--bg); }
+.login-card { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: var(--space-4); box-sizing: border-box; }
+.login-card .side-brand { padding: 0; }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

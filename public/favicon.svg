@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="36 26 118 150" width="118" height="150" role="img" aria-label="Maalban">
+  <title>Maalban</title>
+  <path d="M95 30 L150 48 V100 C150 135 125 158 95 172 C65 158 40 135 40 100 V48 Z" fill="#0F6E56"/>
+  <rect x="62" y="108" width="30" height="26" rx="3" fill="#FFFFFF"/>
+  <rect x="98" y="108" width="30" height="26" rx="3" fill="#FFFFFF"/>
+  <rect x="80" y="78" width="30" height="26" rx="3" fill="#E1F5EE"/>
+  <rect x="74" y="108" width="6" height="10" fill="#EF9F27"/>
+  <rect x="110" y="108" width="6" height="10" fill="#EF9F27"/>
+  <rect x="92" y="78" width="6" height="10" fill="#EF9F27"/>
+</svg>

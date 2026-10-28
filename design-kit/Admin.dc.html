@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Maalban vendor admin</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="maalban-tokens.css">
+<link rel="stylesheet" href="ds/maalban/components/bundle.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Noto+Nastaliq+Urdu:wght@400;600&amp;display=swap">
+<style>
+body{margin:0}a{color:#0F6E56}a:hover{color:#085041}
+.adm-nav{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:var(--ink);font:600 15px/20px "Inter","Segoe UI",sans-serif;cursor:pointer;text-align:start}
+.adm-nav:hover{background:var(--brand-tint)}
+.adm-nav.is-on{background:var(--brand);color:var(--on-brand)}
+.adm-nav:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.keyout{font:600 22px/32px ui-monospace,Consolas,monospace;letter-spacing:2px;padding:12px 16px;background:var(--bg);border:1px solid var(--line);border-radius:10px;word-break:break-all}
+</style>
+</helmet>
+<div class="mb-theme app" data-theme="{{theme}}" lang="en">
+  <nav class="side" aria-label="Admin menu" style="flex: 1 1 240px;">
+    <div class="side-brand">
+      <img src="/_blob/874aac1f333f855e20d60cc66006ea55" alt="" style="width: 34px; height: 43px; flex: none;">
+      <div><div class="side-dealer">Maalban Admin</div><div class="caption">Vendor panel · web</div></div>
+    </div>
+    <sc-for list="{{nav}}" as="n" hint-placeholder-count="6">
+      <button type="button" class="{{n.cls}}" onClick="{{n.pick}}" aria-current="{{n.cur}}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="{{n.d}}"></path></svg>{{n.label}}</button>
+    </sc-for>
+    <div class="side-foot">
+      <div class="sync-card"><div class="label">Privacy guard</div><div class="caption">This panel shows licenses and usage only. Dealers’ invoices and customers never reach it.</div></div>
+    </div>
+  </nav>
+  <main class="app-main">
+    <header class="topbar">
+      <div class="topbar-title"><h1 class="h1">{{title}}</h1><p class="sub">{{sub}}</p></div>
+      <div class="search"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg><input class="mb-input" type="search" aria-label="Find dealer" placeholder="Find dealer or license"></div>
+      <div class="user"><span class="avatar">RM</span><span style="display: flex; flex-direction: column;"><span class="label">Raja Manan</span><span class="caption">Vendor owner · 2-step on</span></span></div>
+    </header>
+    <div class="page">
+      <sc-if value="{{sDealers}}" hint-placeholder-val="{{ true }}">
+        <div class="kpis">
+          <div class="kpi"><span class="kpi__label">Active dealers</span><span class="kpi__value">6</span><span class="kpi__meta">2 on trial</span></div>
+          <div class="kpi"><span class="kpi__label">Expiring in 7 days</span><span class="kpi__value">2</span><span class="kpi__meta">Peshawar, Multan</span></div>
+          <div class="kpi"><span class="kpi__label">Read-only</span><span class="kpi__value mb-money--out">1</span><span class="kpi__meta">Chaudhry &amp; Sons</span></div>
+          <div class="kpi"><span class="kpi__label">On latest version</span><span class="kpi__value">5 of 8</span><span class="kpi__meta">v1.0.4</span></div>
+        </div>
+        <div class="row-c" role="group" aria-label="Filter dealers">
+          <sc-for list="{{filters}}" as="f" hint-placeholder-count="4"><button type="button" class="{{f.cls}}" onClick="{{f.pick}}">{{f.label}}</button></sc-for>
+        </div>
+        <div class="mb-table-wrap tbl-scroll">
+          <table class="mb-table">
+            <thead><tr><th>Dealer</th><th>Plan</th><th class="num">Users</th><th>License</th><th>Version</th><th>Last seen</th><th><span style="position: absolute; left: -9999px;">Action</span></th></tr></thead>
+            <tbody>
+              <sc-for list="{{dealers}}" as="d" hint-placeholder-count="8">
+                <tr>
+                  <td style="font-weight: 600;">{{d.name}}<div class="caption">{{d.city}} · {{d.id}}</div></td>
+                  <td>{{d.plan}}</td><td class="num">{{d.users}}</td>
+                  <td><span class="{{d.badge}}">{{d.status}}</span></td>
+                  <td>{{d.ver}}</td><td>{{d.seen}}</td>
+                  <td><button type="button" class="link-btn" onClick="{{d.key}}">Issue key</button></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{sKeys}}" hint-placeholder-val="{{ false }}">
+        <div class="split">
+          <div class="main">
+            <section class="mb-card" style="display: flex; flex-direction: column; gap: 16px;">
+              <h2 class="h2">Generate a renewal key</h2>
+              <div class="row">
+                <div class="mb-field" style="flex: 1 1 260px;"><label class="mb-label" for="kd">Dealer</label>
+                  <select id="kd" class="sel" value="{{kDealer}}" onChange="{{setDealer}}"><sc-for list="{{allDealers}}" as="d" hint-placeholder-count="8"><option value="{{d.id}}">{{d.name}} · {{d.city}}</option></sc-for></select></div>
+                <div class="mb-field" style="flex: 1 1 200px;"><label class="mb-label" for="km">Month</label>
+                  <select id="km" class="sel" value="{{kMonth}}" onChange="{{setMonth}}"><option value="Nov 2026">November 2026</option><option value="Dec 2026">December 2026</option><option value="Jan 2027">January 2027</option></select></div>
+              </div>
+              <div class="mb-field"><label class="mb-label" for="ki">Installation ID (from the dealer’s WhatsApp)</label><input id="ki" class="mb-input" value="{{kInst}}" onChange="{{setInst}}" style="font-family: ui-monospace, Consolas, monospace; letter-spacing: 1px;"><span class="mb-hint">Key works only for this installation and this month.</span></div>
+              <div class="row-c"><button type="button" class="mb-btn mb-btn--primary mb-btn--lg" onClick="{{generate}}">Generate signed key</button><span class="caption">Signed in the cloud key vault. The private key never leaves it.</span></div>
+              <sc-if value="{{hasKey}}" hint-placeholder-val="{{ false }}">
+                <div class="col" style="gap: 10px;">
+                  <div class="keyout">{{keyText}}</div>
+                  <div class="row-c"><button type="button" class="mb-btn mb-btn--secondary" onClick="{{copyKey}}">{{copyLabel}}</button><button type="button" class="mb-btn mb-btn--secondary">Send on WhatsApp</button><button type="button" class="mb-btn mb-btn--ghost">Show QR</button></div>
+                </div>
+              </sc-if>
+            </section>
+          </div>
+          <aside class="aside">
+            <section class="mb-card">
+              <div class="card-head"><h2 class="h2">Issue log</h2><span class="caption">Every key, who issued it</span></div>
+              <div class="list">
+                <sc-for list="{{log}}" as="l" hint-placeholder-count="5">
+                  <div class="li"><div class="li__main"><div class="li__title">{{l.dealer}}</div><div class="caption">{{l.month}} · {{l.by}} · {{l.when}}</div></div><span class="{{l.badge}}">{{l.status}}</span></div>
+                </sc-for>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{sRevenue}}" hint-placeholder-val="{{ false }}">
+        <div class="kpis">
+          <div class="kpi"><span class="kpi__label">Monthly recurring revenue</span><span class="kpi__value">PKR 36,000</span><span class="kpi__meta">Sample prices: Standard PKR 4,500, Pro PKR 9,000</span></div>
+          <div class="kpi"><span class="kpi__label">Renewals due in 30 days</span><span class="kpi__value">5</span><span class="kpi__meta">PKR 27,000</span></div>
+          <div class="kpi"><span class="kpi__label">Churn, last 90 days</span><span class="kpi__value">0</span><span class="kpi__meta">No dealer has left</span></div>
+          <div class="kpi"><span class="kpi__label">Overdue</span><span class="kpi__value mb-money--out">PKR 9,000</span><span class="kpi__meta">Chaudhry &amp; Sons, Multan General</span></div>
+        </div>
+        <section class="mb-card">
+          <div class="card-head"><div><h2 class="h2">MRR by month</h2><p class="sub">Thousands of PKR · pilot started in August</p></div></div>
+          <div class="bars" role="img" aria-label="MRR grew from 9k in August to 36k in October 2026.">
+            <div class="bar"><span class="bar__val">9k</span><div class="bar__fill" style="height: 40px;"></div></div>
+            <div class="bar"><span class="bar__val">22.5k</span><div class="bar__fill" style="height: 100px;"></div></div>
+            <div class="bar"><span class="bar__val">36k</span><div class="bar__fill is-today" style="height: 160px;"></div></div>
+          </div>
+          <div class="bar-labels" aria-hidden="true"><span>Aug</span><span>Sep</span><span>Oct</span></div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{sSupport}}" hint-placeholder-val="{{ false }}">
+        <div class="mb-table-wrap tbl-scroll">
+          <table class="mb-table">
+            <thead><tr><th>Ticket</th><th>Dealer</th><th>Subject</th><th>Attached</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>#2214</td><td>Raja Brothers Wholesale</td><td>Feedback from Settings</td><td>Screenshot, scrubbed log</td><td><span class="mb-badge mb-badge--warning">New</span></td></tr>
+              <tr><td>#2209</td><td>Karachi Wholesale Mart</td><td>Thermal printer cuts the logo</td><td>Log, printer model</td><td><span class="mb-badge">In progress</span></td></tr>
+              <tr><td>#2201</td><td>Al-Fatah Traders</td><td>Voice does not catch “paneer” in Punjabi</td><td>Audio sample (consented)</td><td><span class="mb-badge">In progress</span></td></tr>
+              <tr><td>#2188</td><td>Sialkot Kiryana Hub</td><td>Remote help: restore last night’s backup</td><td>Remote session, code 4471</td><td><span class="mb-badge mb-badge--success">Solved</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{sOther}}" hint-placeholder-val="{{ false }}">
+        <div class="empty-dash">Releases and staff roles live here: staged rollout of v1.0.5 to 2 of 8 dealers, and roles for your support team. Designed in the next round.</div>
+      </sc-if>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1366,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sec: 'dealers', filter: 'all', kDealer: 'D-0418', kMonth: 'Dec 2026', kInst: '7F3K-Q9WD-2MLA-84XR', key: '', copied: false, issued: [] }; }
+  renderVals() {
+    const s = this.state;
+    const D = [
+      ['D-0418', 'Raja Brothers Wholesale', 'Rawalpindi', 'Standard', '4 / 5', 23, 'v1.0.4', '2 min ago', '7F3K-Q9WD-2MLA-84XR'],
+      ['D-0402', 'Al-Fatah Traders', 'Lahore', 'Pro', '11 / 15', 41, 'v1.0.4', '6 min ago', '2KD8-77QA-LM4P-0ZXE'],
+      ['D-0396', 'Chaudhry & Sons', 'Faisalabad', 'Standard', '3 / 5', -3, 'v1.0.3', 'Yesterday', 'Q1WE-55RT-9YUI-OP3L'],
+      ['D-0421', 'Karachi Wholesale Mart', 'Karachi', 'Pro', '9 / 15', 12, 'v1.0.4', '1 hour ago', 'ZX9C-VB22-NM8Q-WE4R'],
+      ['D-0430', 'Peshawar Distributors', 'Peshawar', 'Trial', '2 / 2', 5, 'v1.0.4', 'Today 9:12', 'TY6U-IO90-PA1S-DF7G'],
+      ['D-0388', 'Multan General Supply', 'Multan', 'Standard', '5 / 5', -1, 'v1.0.2', '3 days ago', 'HJ4K-LZ8X-CV3B-NM6Q'],
+      ['D-0409', 'Sialkot Kiryana Hub', 'Sialkot', 'Standard', '2 / 5', 28, 'v1.0.4', 'Today 10:40', 'WE2R-TY7U-IO1P-AS5D'],
+      ['D-0433', 'Quetta Trading Co.', 'Quetta', 'Trial', '1 / 2', 9, 'v1.0.3', 'Mon 26', 'FG8H-JK3L-ZX6C-VB9N']
+    ].map(r => ({ id: r[0], name: r[1], city: r[2], plan: r[3], users: r[4], days: r[5], ver: r[6], seen: r[7], inst: r[8] }));
+    const stat = d => d.days < -2 ? ['Read-only · ended ' + (-d.days) + ' days ago', 'mb-badge mb-badge--danger', 'ro'] : d.days < 0 ? ['Grace period · ' + (5 + d.days) + ' days left', 'mb-badge mb-badge--warning', 'exp'] : d.days <= 7 ? ['Expires in ' + d.days + ' days', 'mb-badge mb-badge--warning', 'exp'] : ['Active · ' + d.days + ' days', 'mb-badge mb-badge--success', 'ok'];
+    const filters = [['all', 'All 8'], ['exp', 'Expiring'], ['ro', 'Read-only'], ['trial', 'Trial']].map(([k, label]) => ({ label, cls: s.filter === k ? 'chip is-on' : 'chip', pick: () => this.setState({ filter: k }) }));
+    const dealers = D.filter(d => s.filter === 'all' || (s.filter === 'trial' ? d.plan === 'Trial' : stat(d)[2] === s.filter)).map(d => { const st = stat(d);
+      return { ...d, status: st[0], badge: st[1], key: () => this.setState({ sec: 'keys', kDealer: d.id, kInst: d.inst, key: '' }) }; });
+    const NAV = [['dealers', 'Dealers', 'M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6'], ['keys', 'Key generator', 'M15 7a4 4 0 1 1-3.9 5H3v3h3v3h3v-3h2.1A4 4 0 0 1 15 7z'], ['revenue', 'Revenue', 'M3 3v18h18M7 15l4-4 3 3 5-6'],
+      ['support', 'Support desk', 'M4 5h16v11H8l-4 4z'], ['releases', 'Releases', 'M12 3v12M7 10l5 5 5-5M4 21h16'], ['staff', 'Staff roles', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0']];
+    const nav = NAV.map(n => ({ label: n[1], d: n[2], cls: s.sec === n[0] ? 'adm-nav is-on' : 'adm-nav', cur: s.sec === n[0] ? 'page' : 'false', pick: () => this.setState({ sec: n[0] }) }));
+    const titles = { dealers: ['Dealers', '8 installations across Pakistan'], keys: ['Key generator', 'Monthly offline keys, signed with Ed25519'], revenue: ['Revenue', 'October 2026'], support: ['Support desk', '3 open tickets'], releases: ['Releases', 'Staged rollout'], staff: ['Staff roles', 'Your team'] };
+    const kd = D.find(d => d.id === s.kDealer);
+    const log = s.issued.concat([
+      { dealer: 'Al-Fatah Traders', month: 'Nov 2026', by: 'Raja Manan', when: '25 Oct, 4:10 pm', status: 'Active', badge: 'mb-badge mb-badge--success' },
+      { dealer: 'Sialkot Kiryana Hub', month: 'Nov 2026', by: 'Raja Manan', when: '24 Oct, 11:02 am', status: 'Active', badge: 'mb-badge mb-badge--success' },
+      { dealer: 'Karachi Wholesale Mart', month: 'Oct 2026', by: 'Hina (support)', when: '06 Oct, 2:45 pm', status: 'Active', badge: 'mb-badge mb-badge--success' },
+      { dealer: 'Chaudhry & Sons', month: 'Oct 2026', by: 'Raja Manan', when: '02 Oct, 9:30 am', status: 'Revoked', badge: 'mb-badge mb-badge--danger' } ]);
+    const mk = () => { const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let out = []; for (let g = 0; g < 5; g++) { let p = ''; for (let i = 0; i < 5; i++) p += c[Math.floor(Math.random() * c.length)]; out.push(p); } return out.join('-'); };
+    return {
+      theme: this.props.dark ? 'dark' : 'light', nav, filters, dealers, allDealers: D, log,
+      title: titles[s.sec][0], sub: titles[s.sec][1],
+      sDealers: s.sec === 'dealers', sKeys: s.sec === 'keys', sRevenue: s.sec === 'revenue', sSupport: s.sec === 'support', sOther: s.sec === 'releases' || s.sec === 'staff',
+      kDealer: s.kDealer, setDealer: e => { const d = D.find(x => x.id === e.target.value); this.setState({ kDealer: d.id, kInst: d.inst, key: '' }); },
+      kMonth: s.kMonth, setMonth: e => this.setState({ kMonth: e.target.value, key: '' }), kInst: s.kInst, setInst: e => this.setState({ kInst: e.target.value.toUpperCase(), key: '' }),
+      generate: () => this.setState({ key: mk(), copied: false, issued: [{ dealer: kd.name, month: s.kMonth, by: 'Raja Manan', when: 'Just now', status: 'Issued', badge: 'mb-badge mb-badge--warning' }].concat(s.issued) }),
+      hasKey: !!s.key, keyText: s.key, copyLabel: s.copied ? 'Copied' : 'Copy key', copyKey: () => this.setState({ copied: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

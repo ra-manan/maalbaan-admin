@@ -1,0 +1,29 @@
+/* Maalban tokens as CSS variables, generated from the Maalban design system tokens.json (light is the reference). */
+:root, .mb-theme {
+  --bg: #F6F8F7; --surface: #FFFFFF; --line: #DDE3E1; --line-strong: #7A8381;
+  --ink: #1B1F1E; --slate: #5B6361;
+  --brand: #0F6E56; --brand-dark: #085041; --brand-tint: #E1F5EE; --on-brand: #FFFFFF;
+  --accent: #EF9F27; --on-accent: #412402;
+  --success: #2E7D32; --success-tint: #EAF5EB;
+  --danger: #C62828; --danger-tint: #FCEBEA; --on-danger: #FFFFFF;
+  --warning-tint: #FAEEDA; --warning-ink: #412402;
+  --focus: #0F6E56;
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(27,31,30,0.06); --shadow-md: 0 4px 16px rgba(27,31,30,0.08);
+  --control-md: 44px; --control-lg: 52px;
+}
+[data-theme="dark"] {
+  --bg: #0F1413; --surface: #171D1C; --line: #2E3836; --line-strong: #6B7674;
+  --ink: #EEF2F1; --slate: #A3ADAA;
+  --brand: #4FC3A1; --brand-dark: #8FE3CB; --brand-tint: #123A31; --on-brand: #06231C;
+  --accent: #F2B24D; --on-accent: #412402;
+  --success: #7CD083; --success-tint: #16301A;
+  --danger: #F39A95; --danger-tint: #3A1A19; --on-danger: #3A0F0E;
+  --warning-tint: #3A2B10; --warning-ink: #F6D9A0;
+  --focus: #6FD6B7;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4); --shadow-md: 0 4px 16px rgba(0,0,0,0.45);
+}
