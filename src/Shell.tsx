@@ -10,6 +10,7 @@ const NAV: { to: string; label: string; icon: IconName; ownerOnly?: boolean; end
   { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
   { to: '/accounts', label: 'Accounts', icon: 'accounts' },
   { to: '/demo-requests', label: 'Demo requests', icon: 'demo' },
+  { to: '/munshi', label: 'Munshi', icon: 'munshi' },
   { to: '/plans', label: 'Plans and prices', icon: 'plans' },
   { to: '/staff', label: 'Staff', icon: 'staff', ownerOnly: true },
   { to: '/activity', label: 'Activity log', icon: 'activity' },
@@ -37,7 +38,7 @@ export function Shell() {
         <div className="side-foot">
           <div className="sync-card">
             <div className="label">Privacy guard</div>
-            <div className="caption">This panel shows licences and usage only. Dealers’ invoices and customers never reach it.</div>
+            <div className="caption">This panel shows licences and usage. Dealers’ invoices and customers never reach it. The one exception is the sentences people speak to Munshi, kept while a shop’s text switch is on.</div>
           </div>
         </div>
       </nav>

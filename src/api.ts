@@ -180,6 +180,96 @@ export interface AccountDetail {
   plan: Plan | null;
 }
 
+/** One slice of the Munshi figures (a language, a screen, a role, a model, a day). */
+export interface MunshiGroup {
+  key: string;
+  commands: number;
+  failed: number;
+  /** Share of spoken lines that stood as spoken once the invoice was saved; null until some were saved. */
+  keptPct: number | null;
+  costMicro: number;
+}
+
+export interface MunshiSummary {
+  days: number;
+  since: number;
+  commands: number;
+  failed: number;
+  answeredByAi: number;
+  answeredByLocal: number;
+  outcomes: { added: number; cancelled: number; needsNet: number; settled: number; notReported: number };
+  undone: number;
+  lines: { kept: number; changed: number; removed: number; keptPct: number | null };
+  latencyMs: { p50: number | null; p95: number | null };
+  tokens: { input: number; output: number };
+  costMicro: number;
+  costPerCommandMicro: number | null;
+  speech: { clips: number; failed: number; audioSeconds: number };
+  failures: Record<string, number>;
+  byDay: { day: string; commands: number; failed: number; keptPct: number | null; costMicro: number }[];
+  byLanguage: MunshiGroup[];
+  bySurface: MunshiGroup[];
+  byRole: MunshiGroup[];
+  byModel: MunshiGroup[];
+  truncated: boolean;
+}
+
+export type MunshiView = 'all' | 'failed' | 'edited' | 'cancelled';
+
+export interface MunshiEvent {
+  id: string;
+  utterance_id: string | null;
+  created_at: number;
+  kind: 'parse' | 'transcribe' | 'local';
+  tier: 'ai' | 'whisper_cloud' | 'local';
+  model: string | null;
+  surface: string | null;
+  channel: string | null;
+  language: string | null;
+  role: string | null;
+  status: 'ok' | 'failed' | 'off';
+  failure: string | null;
+  latency_ms: number | null;
+  audio_ms: number | null;
+  cost_micro: number | null;
+  lines_total: number | null;
+  lines_sure: number | null;
+  answered_by: 'ai' | 'local' | null;
+  outcome: 'added' | 'cancelled' | 'needs_net' | 'settled' | null;
+  lines_kept: number | null;
+  lines_changed: number | null;
+  lines_removed: number | null;
+  undone: number | null;
+  transcript: string | null;
+  proposed: string | null;
+  final: string | null;
+  dealer_name: string;
+}
+
+export interface MunshiShop {
+  id: string;
+  name: string;
+  shareText: boolean;
+  commands: number;
+  failed: number;
+  keptPct: number | null;
+  costMicro: number;
+  lastAt: number | null;
+}
+
+/** A scored test-set run uploaded by the eval runner in the Munshi Agent repo. Scores are 0 to 1. */
+export interface EvalRun {
+  id: string;
+  createdAt: number;
+  label: string;
+  kind: 'nlu' | 'speech';
+  language: string | null;
+  setName: string;
+  setSize: number;
+  metrics: Record<string, number>;
+  notes: string | null;
+}
+
 export const api = {
   login: (email: string, password: string) => post<{ admin: Admin }>('/auth/login', { email, password }),
   logout: () => post<{ ok: true }>('/auth/logout'),
@@ -212,4 +302,10 @@ export const api = {
   updateStaff: (id: string, input: { active?: boolean; role?: 'owner' | 'staff'; password?: string }) => patch<{ ok: true }>(`/staff/${id}`, input),
 
   audit: () => get<{ entries: AuditEntry[] }>('/audit?limit=100'),
+
+  munshiSummary: (days: number) => get<MunshiSummary>(`/munshi/summary?days=${days}`),
+  munshiEvents: (view: MunshiView, before?: number) => get<{ events: MunshiEvent[] }>(`/munshi/events?view=${view}&limit=50${before ? `&before=${before}` : ''}`),
+  munshiShops: (days: number) => get<{ shops: MunshiShop[] }>(`/munshi/shops?days=${days}`),
+  setMunshiText: (dealerId: string, shareText: boolean) => patch<{ ok: true }>(`/munshi/shops/${dealerId}`, { shareText }),
+  munshiEvalRuns: () => get<{ runs: EvalRun[] }>('/munshi/eval-runs?limit=100'),
 };

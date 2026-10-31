@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMonths, ago, dateText, feeStatus, licenseBadge, phoneText, pkr, whatsappDigits } from './format';
+import { addMonths, ago, dateText, feeStatus, licenseBadge, millis, percent, phoneText, pkr, ratio, usd, whatsappDigits } from './format';
 
 describe('format', () => {
   it('writes money and dates the Maalban way', () => {
@@ -33,6 +33,28 @@ describe('format', () => {
     expect(addMonths('2026-01-31', 1)).toBe('2026-02-28');
     expect(addMonths('2026-11-15', 12)).toBe('2027-11-15');
     expect(addMonths('2026-12-31', 2)).toBe('2027-02-28');
+  });
+});
+
+describe('Munshi figures', () => {
+  it('writes tiny dollar amounts so they can be told apart', () => {
+    expect(usd(null)).toBe('—');
+    expect(usd(0)).toBe('$0');
+    expect(usd(200)).toBe('$0.0002');
+    expect(usd(12_500)).toBe('$0.0125');
+    expect(usd(25_000)).toBe('$0.025');
+    expect(usd(4_250_000)).toBe('$4.25');
+  });
+
+  it('writes shares, scores and speeds', () => {
+    expect(percent(75)).toBe('75%');
+    expect(percent(null)).toBe('—');
+    expect(ratio(0.0831)).toBe('8.3%');
+    expect(ratio(1)).toBe('100%');
+    expect(ratio(undefined)).toBe('—');
+    expect(millis(840)).toBe('840 ms');
+    expect(millis(2340)).toBe('2.3 s');
+    expect(millis(null)).toBe('—');
   });
 });
 

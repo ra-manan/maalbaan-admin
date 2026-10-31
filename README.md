@@ -12,6 +12,7 @@ It never shows a dealer's invoices or customers: the API behind it does not hold
 | Accounts | All accounts with filters (All, Active, Suspended, Expiring, Read-only, Trial) and search; **New account** |
 | Account detail | Licence and plan, contact, payments, connected computers. Edit details, **Record payment** (licence fee, monthly fee or other, pre-filled from the plan; optionally extends the licence date; the page shows whether the licence fee is paid and the monthly fee is due), **Activation code** (shown once, WhatsApp link), **Suspend / Reactivate**, remove a computer |
 | Demo requests | Requests from the website form. Set status, add notes, **Create trial account** (14 days) |
+| Munshi | How voice entry is doing: entries, failures with their reasons, kept as spoken, cost and speed, by language, screen, role and model; accuracy (live, and the scored test sets uploaded by the eval runner); the failed and edited sentences; per shop use and the switch that keeps or drops a shop's spoken sentences |
 | Plans and prices | Owner sets a one-time licence fee and a monthly fee (empty until decided) and can switch a plan off; monthly fees feed MRR |
 | Staff (owner) | Add people, set a new password, pause a login |
 | Activity log | Who did what |
