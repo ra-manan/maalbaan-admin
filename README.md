@@ -52,3 +52,7 @@ The sign-in cookie is `HttpOnly`, `Secure` and `SameSite=Strict`, set by `api.ma
 
 - Users per account ("4 / 5" in the design) and app version ("On latest version"): the desktop app does not send these yet, so the panel shows computers connected and last seen instead.
 - Support desk, Releases: not requested.
+
+## Live and staging
+
+Sign in at `manage.maalbaan.com` and pick **Live** or **Staging** under "Server" (sign-in page or side menu). Staging accounts, activation codes and payments live in the staging database and never reach live shops; the staging web app is `staging.app.maalbaan.com`. Staging logins are separate from live ones: add or change a person on each side.

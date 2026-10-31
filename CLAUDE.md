@@ -7,3 +7,4 @@ Vendor admin panel for manage.maalbaan.com. React 18 + TypeScript + Vite, plain 
 - Add screens as routes in `src/main.tsx`, using `<Page>` from `src/Shell.tsx`; add the menu item to `NAV` in `Shell.tsx`.
 - Do not add dependencies without asking. `npm run build` and `npm test` must pass.
 - Read `README.md` for screens, local run and deploy.
+- Live / Staging switch (`src/environment.ts`, `src/EnvironmentSwitch.tsx`): the same panel talks to `https://api.maalbaan.com` or `https://api-staging.maalbaan.com`, chosen in the browser (`maalbaan-admin:environment`, default live) and only in a deployed build. A switch reloads the page because the sign-in cookie belongs to one API. Staging shows a banner. Staging has its own database and panel logins (the two live owners were copied once on 2026-10-31; later password or staff changes do not sync). A new API address must also go in `public/_headers` (CSP `connect-src`).
