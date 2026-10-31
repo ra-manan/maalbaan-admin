@@ -220,7 +220,7 @@ export interface MunshiEvent {
   id: string;
   utterance_id: string | null;
   created_at: number;
-  kind: 'parse' | 'transcribe' | 'local';
+  kind: 'parse' | 'transcribe' | 'local' | 'ask';
   tier: 'ai' | 'whisper_cloud' | 'local';
   model: string | null;
   surface: string | null;

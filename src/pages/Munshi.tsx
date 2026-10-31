@@ -348,6 +348,7 @@ function kindText(e: MunshiEvent): string {
   const speed = e.latency_ms !== null ? ` · ${millis(e.latency_ms)}` : '';
   if (e.kind === 'transcribe') return `Speech clip${e.audio_ms !== null ? ` · ${Math.round(e.audio_ms / 100) / 10} s` : ''}${speed}`;
   if (e.kind === 'local') return 'Read on the device';
+  if (e.kind === 'ask') return `Munshi question read by Claude${speed}`;
   return `Read by Claude${speed}`;
 }
 
@@ -356,6 +357,11 @@ function result(e: MunshiEvent): { text: string; tone: Tone; detail?: string } {
   if (e.status === 'off') return { text: 'Not switched on', tone: 'warning', detail: failureText(e.failure) };
   if (e.undone === 1) return { text: 'Undone', tone: 'warning', detail: 'The person took it off the bill' };
   const changed = (e.lines_changed ?? 0) + (e.lines_removed ?? 0);
+  if (e.kind === 'ask') {
+    if (e.outcome === 'settled') return { text: 'Done', tone: 'success', detail: 'The person confirmed it' };
+    if (e.outcome === 'cancelled') return { text: 'Not done', tone: 'neutral', detail: 'Asked, then cancelled or left alone' };
+    return { text: 'Read', tone: 'neutral' };
+  }
   if (e.outcome === 'settled') {
     const detail = `${e.lines_kept ?? 0} kept, ${e.lines_changed ?? 0} changed, ${e.lines_removed ?? 0} removed`;
     return changed > 0 ? { text: 'Edited after', tone: 'warning', detail } : { text: 'Kept as spoken', tone: 'success', detail };
