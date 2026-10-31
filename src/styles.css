@@ -43,3 +43,6 @@ textarea.mb-input { padding-block: var(--space-2); min-height: 88px; resize: ver
 .login-card .side-brand { padding: 0; }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.env-switch { display: grid; gap: var(--space-1); padding: var(--space-2) var(--space-3); }
+.env-banner { padding: var(--space-2) var(--space-5); background: var(--warning-tint); color: var(--warning-ink); font: 400 14px/20px var(--font-sans); border-bottom: 1px solid var(--accent); }

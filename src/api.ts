@@ -1,6 +1,8 @@
 /** Typed calls to the Maalbaan API (`/v1/manage/*`). The sign-in cookie is HttpOnly: this code never sees it. */
 
-const BASE: string = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? 'https://api.maalbaan.com' : '');
+import { apiBaseFor, environment } from './environment';
+
+const BASE: string = apiBaseFor(environment, import.meta.env.VITE_API_URL, import.meta.env.PROD);
 
 export type LicenseState = 'active' | 'expiring' | 'grace' | 'expired' | 'suspended';
 

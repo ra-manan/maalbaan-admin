@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { api } from './api';
 import { useAuth } from './auth';
 import { initials } from './format';
+import { EnvironmentSwitch, StagingBanner } from './EnvironmentSwitch';
 import { Dialog, Field, Icon, useSave, Alert, type IconName } from './ui';
 
 const NAV: { to: string; label: string; icon: IconName; ownerOnly?: boolean; end?: boolean }[] = [
@@ -26,6 +27,7 @@ export function Shell() {
             <div className="caption">manage.maalbaan.com</div>
           </div>
         </div>
+        <EnvironmentSwitch />
         {NAV.filter((n) => !n.ownerOnly || admin.role === 'owner').map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `nav-item${isActive ? ' is-active' : ''}`}>
             <Icon name={n.icon} />
@@ -40,6 +42,7 @@ export function Shell() {
         </div>
       </nav>
       <main className="app-main">
+        <StagingBanner />
         <Outlet />
       </main>
     </div>

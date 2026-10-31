@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { api, type Admin } from '../api';
+import { EnvironmentSwitch } from '../EnvironmentSwitch';
 import { Alert, Field, useSave } from '../ui';
 
 export function Login({ onSignedIn, notice }: { onSignedIn: (a: Admin) => void; notice?: string }) {
@@ -22,6 +23,7 @@ export function Login({ onSignedIn, notice }: { onSignedIn: (a: Admin) => void; 
             <p className="caption">Sign in to manage accounts</p>
           </div>
         </div>
+        <EnvironmentSwitch />
         {notice && <Alert tone="warning">{notice}</Alert>}
         <Field label="Email">{(id) => <input id={id} className="mb-input" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />}</Field>
         <Field label="Password">{(id) => <input id={id} className="mb-input" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />}</Field>
