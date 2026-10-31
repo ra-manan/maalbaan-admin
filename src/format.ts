@@ -40,6 +40,28 @@ export function ago(ms: number | null, now = Date.now()): string {
   return new Date(ms).toISOString().slice(0, 10).replace(/^(\d{4})-(\d{2})-(\d{2})$/, (_, y, mo, da) => `${Number(da)} ${MONTHS[Number(mo) - 1]} ${y}`);
 }
 
+/** Millionths of a US dollar as dollars: 200 -> $0.0002, 4_250_000 -> $4.25. Null (an unpriced model) shows a dash. */
+export function usd(micro: number | null): string {
+  if (micro === null) return '—';
+  const dollars = micro / 1_000_000;
+  if (dollars === 0) return '$0';
+  if (dollars >= 1) return `$${dollars.toFixed(2)}`;
+  // Under a dollar: up to four places, but never fewer than two ($0.50, $0.025, $0.0125, $0.0002).
+  return `$${dollars.toFixed(4).replace(/0{1,2}$/, '')}`;
+}
+
+/** 91.2 -> 91.2%, null -> a dash. */
+export const percent = (value: number | null): string => (value === null ? '—' : `${value}%`);
+
+/** 0.0831 -> 8.3%, for the 0 to 1 scores the eval runner uploads. */
+export const ratio = (value: number | undefined): string => (value === undefined ? '—' : `${(Math.round(value * 1000) / 10).toString()}%`);
+
+/** 840 -> 840 ms, 2300 -> 2.3 s. */
+export function millis(ms: number | null): string {
+  if (ms === null) return '—';
+  return ms < 1000 ? `${ms} ms` : `${(Math.round(ms / 100) / 10).toString()} s`;
+}
+
 export type Tone = 'success' | 'warning' | 'danger' | 'neutral';
 
 export function licenseBadge(l: License, trial = false): { text: string; tone: Tone } {
@@ -102,6 +124,8 @@ const ACTIONS: Record<string, string> = {
   staff_created: 'Added staff login',
   staff_updated: 'Changed staff login',
   password_changed: 'Changed own password',
+  munshi_text_on: 'Switched on Munshi text for a shop',
+  munshi_text_off: 'Switched off Munshi text for a shop',
 };
 export const actionText = (action: string) => ACTIONS[action] ?? action;
 

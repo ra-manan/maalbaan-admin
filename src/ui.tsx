@@ -23,6 +23,7 @@ const PATHS = {
   copy: 'M9 9h11v11H9zM5 15V4h11',
   back: 'M15 5l-7 7 7 7',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+  munshi: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3',
 } as const;
 
 export type IconName = keyof typeof PATHS;
