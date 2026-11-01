@@ -376,4 +376,58 @@ export const api = {
   addMasterCompany: (input: MasterInput) => post<{ id: string }>('/master/companies', input),
   editMasterCompany: (id: string, input: MasterInput) => patch<{ ok: true }>(`/master/companies/${id}`, input),
   munshiEvalRuns: () => get<{ runs: EvalRun[] }>('/munshi/eval-runs?limit=100'),
+
+  feedback: (query: FeedbackQuery) => get<{ total: number; page: number; pageSize: number; counts: Record<FeedbackStatus | 'all', number>; feedback: FeedbackItem[] }>(`/feedback${feedbackQuery(query)}`),
+  updateFeedback: (id: string, input: { status?: FeedbackStatus; notes?: string }) => patch<{ ok: true }>(`/feedback/${id}`, input),
+  /** A picture or voice note a shop sent. It needs the sign-in cookie, so it is fetched here and shown from a local address. */
+  feedbackFile: async (id: string, name: string): Promise<Blob> => {
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/v1/manage/feedback/${encodeURIComponent(id)}/file/${encodeURIComponent(name)}`, { credentials: 'include' });
+    } catch {
+      throw new ApiError(0, 'offline', 'Cannot reach the server. Check your internet and try again.');
+    }
+    if (!res.ok) throw new ApiError(res.status, 'error', 'That file could not be opened.');
+    return res.blob();
+  },
 };
+
+export type FeedbackKind = 'bug' | 'issue' | 'change';
+export type FeedbackStatus = 'new' | 'seen' | 'working' | 'done' | 'declined';
+
+export interface FeedbackItem {
+  id: string;
+  dealerId: string;
+  dealerName: string;
+  created_at: number;
+  updated_at: number;
+  kind: FeedbackKind;
+  message: string | null;
+  user_name: string | null;
+  role: string | null;
+  screen: string | null;
+  surface: string | null;
+  language: string | null;
+  app_version: string | null;
+  audio_ms: number | null;
+  files: { name: string; type: string }[];
+  status: FeedbackStatus;
+  notes: string | null;
+}
+
+export interface FeedbackQuery {
+  q: string;
+  status: FeedbackStatus | '';
+  kind: FeedbackKind | '';
+  page: number;
+}
+
+function feedbackQuery(q: FeedbackQuery): string {
+  const params = new URLSearchParams();
+  if (q.q) params.set('q', q.q);
+  if (q.status) params.set('status', q.status);
+  if (q.kind) params.set('kind', q.kind);
+  if (q.page > 1) params.set('page', String(q.page));
+  const text = params.toString();
+  return text ? `?${text}` : '';
+}
