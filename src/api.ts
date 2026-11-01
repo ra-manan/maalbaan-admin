@@ -273,6 +273,62 @@ export interface EvalRun {
   notes: string | null;
 }
 
+export type MasterStatus = 'active' | 'hidden';
+
+/** A product in the master list: names only. No price or stock is ever kept for it. */
+export interface MasterProduct {
+  id: string;
+  name: string;
+  name_ur: string | null;
+  /** The words people say for it (voice names). */
+  aliases: string[];
+  status: MasterStatus;
+  company_id: string | null;
+  company_name: string | null;
+  company_name_ur: string | null;
+  /** The shop's id, or "admin" when it was added here. */
+  created_by: string;
+  created_at: number;
+  updated_at: number;
+  /** How many shops have it. */
+  shops: number;
+}
+
+export interface MasterCompany {
+  id: string;
+  name: string;
+  name_ur: string | null;
+  status: MasterStatus;
+  created_by: string;
+  created_at: number;
+  updated_at: number;
+  shops: number;
+  products: number;
+}
+
+export interface MasterQuery {
+  q: string;
+  status: MasterStatus | '';
+  page: number;
+}
+
+export interface MasterInput {
+  name?: string;
+  nameUr?: string | null;
+  status?: MasterStatus;
+  aliases?: string[];
+  companyId?: string | null;
+}
+
+const masterQuery = ({ q, status, page }: MasterQuery) => {
+  const p = new URLSearchParams();
+  if (q) p.set('q', q);
+  if (status) p.set('status', status);
+  if (page > 1) p.set('page', String(page));
+  const text = p.toString();
+  return text ? `?${text}` : '';
+};
+
 export const api = {
   login: (email: string, password: string) => post<{ admin: Admin }>('/auth/login', { email, password }),
   logout: () => post<{ ok: true }>('/auth/logout'),
@@ -313,5 +369,65 @@ export const api = {
   setMunshiShop: (dealerId: string, munshiOn: boolean) => patch<{ ok: true }>(`/munshi/shops/${dealerId}`, { munshiOn }),
   munshiSwitch: () => get<{ on: boolean }>('/munshi/switch'),
   setMunshiSwitch: (on: boolean) => patch<{ ok: true; on: boolean }>('/munshi/switch', { on }),
+  masterProducts: (query: MasterQuery) => get<{ total: number; page: number; pageSize: number; products: MasterProduct[] }>(`/master/products${masterQuery(query)}`),
+  masterCompanies: (query: MasterQuery) => get<{ total: number; page: number; pageSize: number; companies: MasterCompany[] }>(`/master/companies${masterQuery(query)}`),
+  addMasterProduct: (input: MasterInput) => post<{ id: string }>('/master/products', input),
+  editMasterProduct: (id: string, input: MasterInput) => patch<{ ok: true }>(`/master/products/${id}`, input),
+  addMasterCompany: (input: MasterInput) => post<{ id: string }>('/master/companies', input),
+  editMasterCompany: (id: string, input: MasterInput) => patch<{ ok: true }>(`/master/companies/${id}`, input),
   munshiEvalRuns: () => get<{ runs: EvalRun[] }>('/munshi/eval-runs?limit=100'),
+
+  feedback: (query: FeedbackQuery) => get<{ total: number; page: number; pageSize: number; counts: Record<FeedbackStatus | 'all', number>; feedback: FeedbackItem[] }>(`/feedback${feedbackQuery(query)}`),
+  updateFeedback: (id: string, input: { status?: FeedbackStatus; notes?: string }) => patch<{ ok: true }>(`/feedback/${id}`, input),
+  /** A picture or voice note a shop sent. It needs the sign-in cookie, so it is fetched here and shown from a local address. */
+  feedbackFile: async (id: string, name: string): Promise<Blob> => {
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/v1/manage/feedback/${encodeURIComponent(id)}/file/${encodeURIComponent(name)}`, { credentials: 'include' });
+    } catch {
+      throw new ApiError(0, 'offline', 'Cannot reach the server. Check your internet and try again.');
+    }
+    if (!res.ok) throw new ApiError(res.status, 'error', 'That file could not be opened.');
+    return res.blob();
+  },
 };
+
+export type FeedbackKind = 'bug' | 'issue' | 'change';
+export type FeedbackStatus = 'new' | 'seen' | 'working' | 'done' | 'declined';
+
+export interface FeedbackItem {
+  id: string;
+  dealerId: string;
+  dealerName: string;
+  created_at: number;
+  updated_at: number;
+  kind: FeedbackKind;
+  message: string | null;
+  user_name: string | null;
+  role: string | null;
+  screen: string | null;
+  surface: string | null;
+  language: string | null;
+  app_version: string | null;
+  audio_ms: number | null;
+  files: { name: string; type: string }[];
+  status: FeedbackStatus;
+  notes: string | null;
+}
+
+export interface FeedbackQuery {
+  q: string;
+  status: FeedbackStatus | '';
+  kind: FeedbackKind | '';
+  page: number;
+}
+
+function feedbackQuery(q: FeedbackQuery): string {
+  const params = new URLSearchParams();
+  if (q.q) params.set('q', q.q);
+  if (q.status) params.set('status', q.status);
+  if (q.kind) params.set('kind', q.kind);
+  if (q.page > 1) params.set('page', String(q.page));
+  const text = params.toString();
+  return text ? `?${text}` : '';
+}

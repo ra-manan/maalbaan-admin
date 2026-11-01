@@ -46,3 +46,11 @@ textarea.mb-input { padding-block: var(--space-2); min-height: 88px; resize: ver
 
 .env-switch { display: grid; gap: var(--space-1); padding: var(--space-2) var(--space-3); }
 .env-banner { padding: var(--space-2) var(--space-5); background: var(--warning-tint); color: var(--warning-ink); font: 400 14px/20px var(--font-sans); border-bottom: 1px solid var(--accent); }
+
+/* Feedback: what a shop sent, with its pictures, voice note and details. */
+.fb-message { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 400 16px/24px var(--font-sans); }
+.fb-shot { display: block; max-width: 220px; max-height: 160px; border: 1px solid var(--line); border-radius: var(--radius-md); }
+.fb-shot-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-md); }
+.fb-facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); margin: 0; }
+.fb-facts dt { font: 600 13px/18px var(--font-sans); color: var(--slate); }
+.fb-facts dd { margin: 0; font: 400 15px/22px var(--font-sans); overflow-wrap: anywhere; }
