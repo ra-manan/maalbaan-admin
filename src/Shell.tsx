@@ -10,6 +10,7 @@ const NAV: { to: string; label: string; icon: IconName; ownerOnly?: boolean; end
   { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
   { to: '/accounts', label: 'Accounts', icon: 'accounts' },
   { to: '/demo-requests', label: 'Demo requests', icon: 'demo' },
+  { to: '/master', label: 'Master lists', icon: 'master' },
   { to: '/munshi', label: 'Munshi', icon: 'munshi' },
   { to: '/plans', label: 'Plans and prices', icon: 'plans' },
   { to: '/staff', label: 'Staff', icon: 'staff', ownerOnly: true },

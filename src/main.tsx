@@ -15,6 +15,7 @@ import { Activity } from './pages/Activity';
 import { Dashboard } from './pages/Dashboard';
 import { Demos } from './pages/Demos';
 import { Login } from './pages/Login';
+import { Master } from './pages/Master';
 import { Munshi } from './pages/Munshi';
 import { Plans } from './pages/Plans';
 import { Staff } from './pages/Staff';
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="accounts" element={<Accounts />} />
             <Route path="accounts/:id" element={<AccountDetail />} />
             <Route path="demo-requests" element={<Demos />} />
+            <Route path="master" element={<Master />} />
             <Route path="munshi" element={<Munshi />} />
             <Route path="plans" element={<Plans />} />
             <Route path="staff" element={<Staff />} />
