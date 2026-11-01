@@ -90,11 +90,18 @@ export interface AuditEntry {
   created_at: number;
 }
 
+/** owner: everything. staff: shops, money, Munshi and feedback. support: can look at shops and follow up demo requests only. */
+export type Role = 'owner' | 'staff' | 'support';
+
+export const ROLE_LABEL: Record<Role, string> = { owner: 'Owner', staff: 'Staff', support: 'Support' };
+
 export interface Staff {
   id: string;
   email: string;
   name: string;
-  role: 'owner' | 'staff';
+  role: Role;
+  /** 1 when this person has an authenticator app set up. */
+  totp: number;
   active: number;
   created_at: number;
   last_login_at: number | null;
@@ -104,7 +111,11 @@ export interface Admin {
   id: string;
   email: string;
   name: string;
-  role: 'owner' | 'staff';
+  role: Role;
+  /** This person has an authenticator app set up. */
+  totp?: boolean;
+  /** This sign-in may only set up the authenticator app (the panel requires one). */
+  limited?: boolean;
 }
 
 export interface Overview {
@@ -330,7 +341,10 @@ const masterQuery = ({ q, status, page }: MasterQuery) => {
 };
 
 export const api = {
-  login: (email: string, password: string) => post<{ admin: Admin }>('/auth/login', { email, password }),
+  login: (email: string, password: string, code?: string) => post<{ admin: Admin }>('/auth/login', code ? { email, password, code } : { email, password }),
+  totpStart: () => post<{ secret: string; uri: string }>('/auth/totp/start'),
+  totpConfirm: (code: string) => post<{ ok: true }>('/auth/totp/confirm', { code }),
+  totpDisable: (password: string, code: string) => post<{ ok: true }>('/auth/totp/disable', { password, code }),
   logout: () => post<{ ok: true }>('/auth/logout'),
   me: () => get<{ admin: Admin }>('/auth/me'),
   changePassword: (current: string, next: string) => post<{ ok: true }>('/auth/password', { current, next }),
@@ -357,8 +371,8 @@ export const api = {
   updatePlan: (id: string, input: { licenseFeePkr?: number | null; monthlyPricePkr?: number | null; enabled?: boolean }) => patch<{ plans: Plan[] }>(`/plans/${id}`, input),
 
   staff: () => get<{ staff: Staff[] }>('/staff'),
-  createStaff: (input: { email: string; name: string; password: string }) => post<{ id: string }>('/staff', input),
-  updateStaff: (id: string, input: { active?: boolean; role?: 'owner' | 'staff'; password?: string }) => patch<{ ok: true }>(`/staff/${id}`, input),
+  createStaff: (input: { email: string; name: string; password: string; role?: Role }) => post<{ id: string }>('/staff', input),
+  updateStaff: (id: string, input: { active?: boolean; role?: Role; password?: string; resetTotp?: boolean }) => patch<{ ok: true }>(`/staff/${id}`, input),
 
   audit: () => get<{ entries: AuditEntry[] }>('/audit?limit=100'),
 

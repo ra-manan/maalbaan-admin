@@ -19,6 +19,7 @@ import { Feedback } from './pages/Feedback';
 import { Master } from './pages/Master';
 import { Munshi } from './pages/Munshi';
 import { Plans } from './pages/Plans';
+import { Security } from './pages/Security';
 import { Staff } from './pages/Staff';
 
 createRoot(document.getElementById('root')!).render(
@@ -36,6 +37,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="munshi" element={<Munshi />} />
             <Route path="plans" element={<Plans />} />
             <Route path="staff" element={<Staff />} />
+            <Route path="security" element={<Security />} />
             <Route path="activity" element={<Activity />} />
             <Route path="*" element={<NotFound />} />
           </Route>

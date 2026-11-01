@@ -1,21 +1,24 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { api } from './api';
+import { api, ROLE_LABEL } from './api';
 import { useAuth } from './auth';
 import { initials } from './format';
 import { EnvironmentSwitch, StagingBanner } from './EnvironmentSwitch';
 import { Dialog, Field, Icon, useSave, Alert, type IconName } from './ui';
+import { Security } from './pages/Security';
 
-const NAV: { to: string; label: string; icon: IconName; ownerOnly?: boolean; end?: boolean }[] = [
-  { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
-  { to: '/accounts', label: 'Accounts', icon: 'accounts' },
-  { to: '/demo-requests', label: 'Demo requests', icon: 'demo' },
+/** `support` marks the few screens a support login may open; the server refuses the rest too. */
+const NAV: { to: string; label: string; icon: IconName; ownerOnly?: boolean; support?: boolean; end?: boolean }[] = [
+  { to: '/', label: 'Dashboard', icon: 'dashboard', end: true, support: true },
+  { to: '/accounts', label: 'Accounts', icon: 'accounts', support: true },
+  { to: '/demo-requests', label: 'Demo requests', icon: 'demo', support: true },
   { to: '/master', label: 'Master lists', icon: 'master' },
   { to: '/feedback', label: 'Feedback', icon: 'feedback' },
   { to: '/munshi', label: 'Munshi', icon: 'munshi' },
-  { to: '/plans', label: 'Plans and prices', icon: 'plans' },
+  { to: '/plans', label: 'Plans and prices', icon: 'plans', support: true },
   { to: '/staff', label: 'Staff', icon: 'staff', ownerOnly: true },
   { to: '/activity', label: 'Activity log', icon: 'activity' },
+  { to: '/security', label: 'Security', icon: 'staff', support: true },
 ];
 
 export function Shell() {
@@ -31,7 +34,7 @@ export function Shell() {
           </div>
         </div>
         <EnvironmentSwitch />
-        {NAV.filter((n) => !n.ownerOnly || admin.role === 'owner').map((n) => (
+        {NAV.filter((n) => !admin.limited && (!n.ownerOnly || admin.role === 'owner') && (admin.role !== 'support' || n.support)).map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `nav-item${isActive ? ' is-active' : ''}`}>
             <Icon name={n.icon} />
             <span className="nav-label">{n.label}</span>
@@ -46,7 +49,8 @@ export function Shell() {
       </nav>
       <main className="app-main">
         <StagingBanner />
-        <Outlet />
+        {/* A sign-in that has no authenticator app yet, where one is required, can do nothing else. */}
+        {admin.limited ? <Security required /> : <Outlet />}
       </main>
     </div>
   );
@@ -79,7 +83,7 @@ export function Page({ title, sub, actions, children }: { title: string; sub?: R
           <span className="avatar" aria-hidden="true">{initials(admin.name)}</span>
           <span className="user-text">
             <span className="label">{admin.name}</span>
-            <span className="caption">{admin.role === 'owner' ? 'Owner' : 'Staff'}</span>
+            <span className="caption">{ROLE_LABEL[admin.role]}</span>
           </span>
           <button type="button" className="link-btn" onClick={() => setPassword(true)}>Password</button>
           <button type="button" className="link-btn" onClick={() => void signOut()}>Sign out</button>
@@ -118,8 +122,8 @@ function PasswordDialog({ onClose }: { onClose: () => void }) {
       ) : (
         <form className="col" onSubmit={submit}>
           <Field label="Current password">{(id) => <input id={id} className="mb-input" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} required />}</Field>
-          <Field label="New password" hint="At least 10 characters.">
-            {(id, d) => <input id={id} aria-describedby={d} className="mb-input" type="password" autoComplete="new-password" minLength={10} value={next} onChange={(e) => setNext(e.target.value)} required />}
+          <Field label="New password" hint="At least 12 characters.">
+            {(id, d) => <input id={id} aria-describedby={d} className="mb-input" type="password" autoComplete="new-password" minLength={12} value={next} onChange={(e) => setNext(e.target.value)} required />}
           </Field>
           {save.error && <Alert tone="danger">{save.error}</Alert>}
           <div className="dialog-foot">
