@@ -126,6 +126,10 @@ const ACTIONS: Record<string, string> = {
   password_changed: 'Changed own password',
   munshi_text_on: 'Switched on Munshi text for a shop',
   munshi_text_off: 'Switched off Munshi text for a shop',
+  munshi_all_on: 'Switched Munshi on for everyone',
+  munshi_all_off: 'Switched Munshi off for everyone',
+  munshi_shop_on: 'Switched Munshi on for a shop',
+  munshi_shop_off: 'Switched Munshi off for a shop',
 };
 export const actionText = (action: string) => ACTIONS[action] ?? action;
 

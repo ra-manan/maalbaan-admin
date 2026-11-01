@@ -130,6 +130,22 @@ export function AccountDetail() {
           </section>
 
           <section className="mb-card">
+            <div className="card-head">
+              <h2 className="h2">Munshi</h2>
+              <Badge tone={a.munshiOn ? 'success' : 'neutral'}>{a.munshiOn ? 'On' : 'Off'}</Badge>
+            </div>
+            <p className="sub" style={{ marginBottom: 'var(--space-2)' }}>
+              {a.munshiOn
+                ? 'The assistant, its buttons and its shortcut show on every computer and phone of this shop.'
+                : 'The assistant, its buttons and its shortcut are hidden for this shop. Voice entry on New invoice still works.'}{' '}
+              A computer picks the change up the next time it checks in.
+            </p>
+            <button type="button" className="mb-btn mb-btn--secondary" onClick={() => void switchMunshi(!a.munshiOn)}>
+              {a.munshiOn ? 'Switch Munshi off' : 'Switch Munshi on'}
+            </button>
+          </section>
+
+          <section className="mb-card">
             <div className="card-head"><h2 className="h2">Computers</h2><span className="caption">{a.deviceCount} connected</span></div>
             {d.openCodes > 0 && <p className="sub" style={{ marginBottom: 'var(--space-2)' }}>{d.openCodes} activation {d.openCodes === 1 ? 'code is' : 'codes are'} waiting to be used.</p>}
             {d.devices.filter((x) => !x.revoked_at).length === 0 ? (
@@ -154,6 +170,15 @@ export function AccountDetail() {
       {dlg === 'suspend' && <SuspendDialog d={d} onClose={() => setDlg(null)} onSaved={(n) => saved(n, 'Account suspended')} />}
     </Page>
   );
+
+  async function switchMunshi(on: boolean) {
+    try {
+      await api.setMunshiShop(a.id, on);
+      saved(await api.account(a.id), on ? 'Munshi switched on' : 'Munshi switched off');
+    } catch (e) {
+      setProblem(messageOf(e));
+    }
+  }
 
   async function reactivate() {
     try {

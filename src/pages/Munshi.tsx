@@ -379,6 +379,16 @@ function Shops({ days }: { days: number }) {
   const [turnOff, setTurnOff] = useState<MunshiShop | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  async function switchShop(shop: MunshiShop) {
+    setError(null);
+    try {
+      await api.setMunshiShop(shop.id, !shop.munshiOn);
+      state.reload();
+    } catch (e) {
+      setError(messageOf(e));
+    }
+  }
+
   async function turnOn(shop: MunshiShop) {
     setError(null);
     try {
@@ -391,6 +401,7 @@ function Shops({ days }: { days: number }) {
 
   return (
     <>
+      <EverywhereSwitch onChanged={state.reload} />
       <p className="sub">Each shop can have the sentences its people speak kept for fixing mistakes and training, or switched off. With it off, only counts are kept.</p>
       {error && <Alert tone="danger">{error}</Alert>}
       <LoadState state={state}>
@@ -401,7 +412,7 @@ function Shops({ days }: { days: number }) {
             <div className="mb-table-wrap tbl-scroll">
               <table className="mb-table">
                 <thead>
-                  <tr><th>Shop</th><th className="num">Entries</th><th className="num">Failed</th><th className="num">Kept as spoken</th><th className="num">Cost</th><th>Last used</th><th>Sentences</th></tr>
+                  <tr><th>Shop</th><th className="num">Entries</th><th className="num">Failed</th><th className="num">Kept as spoken</th><th className="num">Cost</th><th>Last used</th><th>Munshi</th><th>Sentences</th></tr>
                 </thead>
                 <tbody>
                   {state.data.shops.map((s) => (
@@ -412,6 +423,12 @@ function Shops({ days }: { days: number }) {
                       <td className="num">{percent(s.keptPct)}</td>
                       <td className="num">{usd(s.costMicro)}</td>
                       <td>{s.lastAt ? ago(s.lastAt) : <span className="muted">Never</span>}</td>
+                      <td>
+                        <Badge tone={s.munshiOn ? 'success' : 'neutral'}>{s.munshiOn ? 'On' : 'Off'}</Badge>{' '}
+                        <button type="button" className="link-btn" onClick={() => void switchShop(s)}>
+                          {s.munshiOn ? 'Switch off' : 'Switch on'}<span className="visually-hidden"> Munshi for {s.name}</span>
+                        </button>
+                      </td>
                       <td>
                         <Badge tone={s.shareText ? 'success' : 'neutral'}>{s.shareText ? 'Kept' : 'Not kept'}</Badge>{' '}
                         {s.shareText ? (
@@ -430,6 +447,46 @@ function Shops({ days }: { days: number }) {
       </LoadState>
       {turnOff && <TurnOffDialog shop={turnOff} onClose={() => setTurnOff(null)} onDone={() => { setTurnOff(null); state.reload(); }} />}
     </>
+  );
+}
+
+/** The product-wide switch: off hides Munshi for every shop, whatever their own switch says. */
+function EverywhereSwitch({ onChanged }: { onChanged: () => void }) {
+  const state = useLoad(() => api.munshiSwitch(), []);
+  const [confirm, setConfirm] = useState(false);
+  const save = useSave();
+  const on = state.data?.on;
+  const set = (next: boolean) => save.run(async () => { await api.setMunshiSwitch(next); setConfirm(false); state.reload(); onChanged(); });
+  return (
+    <section className="mb-card">
+      <div className="card-head">
+        <div>
+          <h2 className="h2">Munshi for everyone</h2>
+          <p className="sub">Off hides the assistant, its buttons and its shortcut in every shop. Voice entry on New invoice is not affected. Each shop below also has its own switch.</p>
+        </div>
+        {on !== undefined && <Badge tone={on ? 'success' : 'neutral'}>{on ? 'On' : 'Off'}</Badge>}
+      </div>
+      {save.error && <Alert tone="danger">{save.error}</Alert>}
+      {on !== undefined && (on ? (
+        <button type="button" className="mb-btn mb-btn--danger" onClick={() => setConfirm(true)}>Switch Munshi off for everyone</button>
+      ) : (
+        <button type="button" className="mb-btn mb-btn--primary" disabled={save.busy} onClick={() => void set(true)}>{save.busy ? 'Saving…' : 'Switch Munshi on'}</button>
+      ))}
+      {confirm && (
+        <Dialog
+          title="Switch Munshi off for every shop?"
+          onClose={() => setConfirm(false)}
+          footer={
+            <>
+              <button type="button" className="mb-btn mb-btn--secondary" onClick={() => setConfirm(false)}>Cancel</button>
+              <button type="button" className="mb-btn mb-btn--danger" disabled={save.busy} onClick={() => void set(false)}>{save.busy ? 'Saving…' : 'Switch off for everyone'}</button>
+            </>
+          }
+        >
+          <p>Every computer and phone hides Munshi the next time it checks in, within about ten minutes. Switch it on again here at any time.</p>
+        </Dialog>
+      )}
+    </section>
   );
 }
 

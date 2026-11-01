@@ -25,6 +25,8 @@ export interface Account {
   suspendedReason: string | null;
   licenseValidUntil: string;
   graceDays: number;
+  /** Munshi is switched on for this shop (the product-wide switch is separate). */
+  munshiOn: boolean;
   createdAt: number;
   deviceCount: number;
   lastSeenAt: number | null;
@@ -250,6 +252,7 @@ export interface MunshiShop {
   id: string;
   name: string;
   shareText: boolean;
+  munshiOn: boolean;
   commands: number;
   failed: number;
   keptPct: number | null;
@@ -307,5 +310,8 @@ export const api = {
   munshiEvents: (view: MunshiView, before?: number) => get<{ events: MunshiEvent[] }>(`/munshi/events?view=${view}&limit=50${before ? `&before=${before}` : ''}`),
   munshiShops: (days: number) => get<{ shops: MunshiShop[] }>(`/munshi/shops?days=${days}`),
   setMunshiText: (dealerId: string, shareText: boolean) => patch<{ ok: true }>(`/munshi/shops/${dealerId}`, { shareText }),
+  setMunshiShop: (dealerId: string, munshiOn: boolean) => patch<{ ok: true }>(`/munshi/shops/${dealerId}`, { munshiOn }),
+  munshiSwitch: () => get<{ on: boolean }>('/munshi/switch'),
+  setMunshiSwitch: (on: boolean) => patch<{ ok: true; on: boolean }>('/munshi/switch', { on }),
   munshiEvalRuns: () => get<{ runs: EvalRun[] }>('/munshi/eval-runs?limit=100'),
 };
