@@ -14,8 +14,8 @@ function downloadSample(kind: BulkKind) {
 }
 
 /**
- * Upload names from a CSV. Step 1 only checks (nothing is saved): each name is written in Urdu and sorted into new,
- * already in the list, looks the same as one in the list, or twice in the file. Step 2 adds the new ones the person keeps.
+ * Upload names from a CSV. Step 1 only checks (nothing is saved): names are sorted into new,
+ * already in the list (same spelling), or twice in the file. Step 2 adds the new ones the person keeps.
  * A name that is in the list is never changed by an upload.
  */
 export function BulkDialog({ kind, onClose, onDone }: { kind: BulkKind; onClose: () => void; onDone: () => void }) {
@@ -92,7 +92,7 @@ export function BulkDialog({ kind, onClose, onDone }: { kind: BulkKind; onClose:
             <>
               <p className="sub">
                 A CSV file with {kind === 'products' ? 'the product name, and the company name in a second column if you have it' : 'one company name per line'}. English names only, up to {BULK_MAX_ROWS} at a time.
-                Each name is written in Urdu for you, and names that look like ones already in the list are left out. Nothing is saved until you press Add.
+                Names already in the list, or repeated in the file, are left out. Nothing is saved until you press Add. You can type an Urdu name for a new row, or leave it empty.
               </p>
               <Field label="CSV file">
                 {(id) => <input id={id} className="mb-input" type="file" accept=".csv,text/csv,text/plain" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />}
@@ -105,7 +105,7 @@ export function BulkDialog({ kind, onClose, onDone }: { kind: BulkKind; onClose:
           {preview && (
             <>
               <Alert tone={preview.counts.new > 0 ? 'success' : 'warning'} title={summaryLine(preview.counts)}>
-                Tick off any new name you do not want. You can correct the Urdu before adding.
+                Tick off any new name you do not want. You can type the Urdu name before adding, or leave it empty.
               </Alert>
               <div className="mb-table-wrap tbl-scroll">
                 <table className="mb-table">
