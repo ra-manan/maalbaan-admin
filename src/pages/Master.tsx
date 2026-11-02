@@ -3,6 +3,7 @@ import { api, type MasterCompany, type MasterProduct, type MasterStatus } from '
 import { dayTime } from '../format';
 import { aliasText, isRoman, pageCount, parseAliases } from '../master';
 import { Page } from '../Shell';
+import { BulkDialog } from './MasterBulk';
 import { Alert, Badge, Dialog, Empty, Field, LoadState, messageOf, useLoad, useSave } from '../ui';
 
 type Kind = 'products' | 'companies';
@@ -31,6 +32,7 @@ export function Master() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<{ product?: MasterProduct; company?: MasterCompany; adding?: Kind } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [bulk, setBulk] = useState(false);
 
   useEffect(() => setPage(1), [kind, q, status]);
   const query = { q, status, page };
@@ -61,9 +63,14 @@ export function Master() {
       title="Master lists"
       sub="Company and product names that every shop adds to and picks from. Names only: no price, stock or customer is ever kept here."
       actions={
-        <button type="button" className="mb-btn mb-btn--primary" onClick={() => setEditing({ adding: kind })}>
-          {kind === 'products' ? 'Add a product' : 'Add a company'}
-        </button>
+        <>
+          <button type="button" className="mb-btn mb-btn--secondary" onClick={() => setBulk(true)}>
+            Upload a CSV
+          </button>
+          <button type="button" className="mb-btn mb-btn--primary" onClick={() => setEditing({ adding: kind })}>
+            {kind === 'products' ? 'Add a product' : 'Add a company'}
+          </button>
+        </>
       }
     >
       <div className="row-c" role="group" aria-label="Which list">
@@ -145,6 +152,7 @@ export function Master() {
           <button type="button" className="mb-btn mb-btn--secondary" disabled={page >= pages} onClick={() => setPage(page + 1)}>Next</button>
         </div>
       )}
+      {bulk && <BulkDialog kind={kind} onClose={() => setBulk(false)} onDone={reload} />}
       {editing && <EditDialog target={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />}
     </Page>
   );

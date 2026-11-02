@@ -331,6 +331,25 @@ export interface MasterInput {
   companyId?: string | null;
 }
 
+export type BulkStatus = 'new' | 'existing' | 'similar' | 'repeat' | 'invalid';
+
+export interface BulkItem {
+  row: number;
+  name: string;
+  nameUr: string | null;
+  company: string | null;
+  companyUr: string | null;
+  status: BulkStatus;
+  matchedWith?: string;
+  reason?: string;
+}
+
+export interface BulkPreview {
+  kind: 'products' | 'companies';
+  items: BulkItem[];
+  counts: Record<BulkStatus, number>;
+}
+
 const masterQuery = ({ q, status, page }: MasterQuery) => {
   const p = new URLSearchParams();
   if (q) p.set('q', q);
@@ -389,6 +408,8 @@ export const api = {
   editMasterProduct: (id: string, input: MasterInput) => patch<{ ok: true }>(`/master/products/${id}`, input),
   addMasterCompany: (input: MasterInput) => post<{ id: string }>('/master/companies', input),
   editMasterCompany: (id: string, input: MasterInput) => patch<{ ok: true }>(`/master/companies/${id}`, input),
+  bulkPreview: (kind: 'products' | 'companies', csv: string) => post<BulkPreview>('/master/bulk/preview', { kind, csv }),
+  bulkCommit: (kind: 'products' | 'companies', items: Pick<BulkItem, 'name' | 'nameUr' | 'company' | 'companyUr'>[]) => post<{ added: number; addedCompanies: number; skipped: number }>('/master/bulk/commit', { kind, items }),
   munshiEvalRuns: () => get<{ runs: EvalRun[] }>('/munshi/eval-runs?limit=100'),
 
   feedback: (query: FeedbackQuery) => get<{ total: number; page: number; pageSize: number; counts: Record<FeedbackStatus | 'all', number>; feedback: FeedbackItem[] }>(`/feedback${feedbackQuery(query)}`),
