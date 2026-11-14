@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMonths, ago, dateText, feeStatus, licenseBadge, millis, percent, phoneText, pkr, ratio, usd, whatsappDigits } from './format';
+import { addMonths, ago, count, dateText, feeStatus, feeText, licenseBadge, millis, percent, phoneText, pkr, ratio, usd, whatsappDigits } from './format';
 
 describe('format', () => {
   it('writes money and dates the Maalban way', () => {
@@ -22,6 +22,16 @@ describe('format', () => {
   it('labels the licence like the design', () => {
     expect(licenseBadge({ state: 'active', daysLeft: 23, graceLeft: null })).toEqual({ text: 'Active · 23 days', tone: 'success' });
     expect(licenseBadge({ state: 'active', daysLeft: 9, graceLeft: null }, true).text).toBe('Trial · 9 days');
+    // A plan that never expires shows no countdown, but a paused account still says so.
+    expect(licenseBadge({ state: 'active', daysLeft: 365, graceLeft: null }, false, true).text).toBe('Active · never expires');
+    expect(licenseBadge({ state: 'suspended', daysLeft: 365, graceLeft: null }, false, true).text).toBe('Suspended');
+    expect(count(1250000)).toBe('1,250,000');
+    expect(feeText(0, null)).toEqual({ text: 'No fee on this plan', muted: true });
+    expect(feeText(0, 'Paid this month').text).toBe('No fee on this plan');
+    expect(feeText(5000, 'Paid this month')).toEqual({ text: 'Paid this month', muted: false });
+    expect(feeText(5000, null, 'Starts next month')).toEqual({ text: 'Starts next month', muted: true });
+    expect(feeText(5000, null).text).toBe('Due · PKR 5,000');
+    expect(feeText(null, null).text).toBe('Due, plan price not set');
     expect(licenseBadge({ state: 'expiring', daysLeft: 5, graceLeft: null })).toEqual({ text: 'Expires in 5 days', tone: 'warning' });
     expect(licenseBadge({ state: 'grace', daysLeft: -1, graceLeft: 2 }).text).toBe('Grace period · 2 days left');
     expect(licenseBadge({ state: 'expired', daysLeft: -3, graceLeft: null })).toEqual({ text: 'Read-only · ended 3 days ago', tone: 'danger' });

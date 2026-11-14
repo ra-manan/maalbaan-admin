@@ -19,7 +19,7 @@ export function Plans() {
             </tbody>
           </table>
         </div>
-        <p className="caption">Prices are shown in PKR. Each account pays the licence fee once, then the monthly fee. Leave a price empty if you have not decided it yet. A plan that is off keeps its current accounts but cannot be given to new ones. Users is how many people the plan allows.</p>
+        <p className="caption">Prices are shown in PKR. Each account pays the licence fee once, then the monthly fee. Leave a price empty if you have not decided it yet. A plan that is off keeps its current accounts but cannot be given to new ones. Users is how many people the plan allows. An account on Promotional pays nothing and has no end date until you move it to another plan.</p>
       </LoadState>
     </Page>
   );
@@ -49,7 +49,7 @@ function PlanRow({ plan, editable, onSaved }: { plan: Plan; editable: boolean; o
 
   return (
     <tr>
-      <td className="cell-name">{plan.name}{msg && <span className={`caption ${msg.ok ? '' : 'mb-error'}`} role={msg.ok ? 'status' : 'alert'}>{msg.text}</span>}</td>
+      <td className="cell-name">{plan.name}{plan.never_expires && <span className="caption">Never expires</span>}{msg && <span className={`caption ${msg.ok ? '' : 'mb-error'}`} role={msg.ok ? 'status' : 'alert'}>{msg.text}</span>}</td>
       <td className="num">{plan.max_users}</td>
       {editable ? (
         <>

@@ -1,5 +1,21 @@
 import type { DemoStatus, License } from './api';
 
+/** 12500 -> 12,500 */
+export function count(n: number): string {
+  return n.toLocaleString('en-US');
+}
+
+/**
+ * What to say about one fee of an account. A plan whose price is 0 (Promotional) charges nothing, so nothing is due.
+ * `paid` is the ready sentence when the fee is paid; `notYet` when it has not started.
+ */
+export function feeText(price: number | null | undefined, paid: string | null, notYet: string | null = null): { text: string; muted: boolean } {
+  if (price === 0) return { text: 'No fee on this plan', muted: true };
+  if (paid) return { text: paid, muted: false };
+  if (notYet) return { text: notYet, muted: true };
+  return price == null ? { text: 'Due, plan price not set', muted: true } : { text: `Due · ${pkr(price)}`, muted: false };
+}
+
 export function pkr(amount: number): string {
   return `PKR ${amount.toLocaleString('en-US')}`;
 }
@@ -64,7 +80,7 @@ export function millis(ms: number | null): string {
 
 export type Tone = 'success' | 'warning' | 'danger' | 'neutral';
 
-export function licenseBadge(l: License, trial = false): { text: string; tone: Tone } {
+export function licenseBadge(l: License, trial = false, neverExpires = false): { text: string; tone: Tone } {
   const days = (n: number) => `${n} ${n === 1 ? 'day' : 'days'}`;
   switch (l.state) {
     case 'suspended':
@@ -76,11 +92,12 @@ export function licenseBadge(l: License, trial = false): { text: string; tone: T
     case 'expiring':
       return { text: l.daysLeft === 0 ? 'Ends today' : `Expires in ${days(l.daysLeft)}`, tone: 'warning' };
     default:
+      if (neverExpires) return { text: 'Active · never expires', tone: 'success' };
       return { text: `${trial ? 'Trial' : 'Active'} · ${days(l.daysLeft)}`, tone: 'success' };
   }
 }
 
-export const PLAN_NAMES: Record<string, string> = { trial: 'Trial', standard: 'Standard', pro: 'Pro' };
+export const PLAN_NAMES: Record<string, string> = { trial: 'Trial', standard: 'Standard', pro: 'Pro', promo: 'Promotional' };
 export const planName = (id: string) => PLAN_NAMES[id] ?? id;
 
 
