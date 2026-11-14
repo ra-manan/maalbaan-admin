@@ -24,6 +24,8 @@ export interface Account {
   status: 'active' | 'suspended';
   suspendedReason: string | null;
   licenseValidUntil: string;
+  /** The account's plan never expires (Promotional): the saved end date is ignored while it stays on that plan. */
+  neverExpires: boolean;
   graceDays: number;
   /** Munshi is switched on for this shop (the product-wide switch is separate). */
   munshiOn: boolean;
@@ -63,6 +65,35 @@ export interface Plan {
   monthly_price_pkr: number | null;
   /** A switched-off plan keeps its accounts but cannot be given to new ones. */
   enabled: boolean;
+  /** Accounts on this plan have no end date (Promotional). */
+  never_expires: boolean;
+}
+
+/** Saved bills of one kind: how many count, what they add up to, and how many were cancelled or reversed. */
+export interface DocStats {
+  count: number;
+  amountPkr: number;
+  cancelled: number;
+  thisMonth: { count: number; amountPkr: number };
+  firstAt: number | null;
+  lastAt: number | null;
+}
+
+/** What one shop has done, counted from the records its devices have synced. Totals only. */
+export interface AccountStats {
+  sales: DocStats;
+  purchases: DocStats;
+  expenses: { count: number; amountPkr: number };
+  products: { total: number; active: number };
+  companies: number;
+  distributors: number;
+  customers: number;
+  /** Everyone who can sign in (owners and salesmen together; the server cannot tell them apart). */
+  people: number;
+  salesmen: number;
+  warehouses: number;
+  accounts: number;
+  synced: { records: number; lastAt: number | null };
 }
 
 export type DemoStatus = 'new' | 'contacted' | 'scheduled' | 'converted' | 'not_interested' | 'spam';
@@ -375,6 +406,7 @@ export const api = {
       `/dealers${q ? `?q=${encodeURIComponent(q)}` : ''}`,
     ),
   account: (id: string) => get<AccountDetail>(`/dealers/${id}`),
+  accountStats: (id: string) => get<AccountStats>(`/dealers/${id}/stats`),
   createAccount: (input: AccountInput) => post<AccountDetail>('/dealers', input),
   updateAccount: (id: string, input: AccountInput) => patch<AccountDetail>(`/dealers/${id}`, input),
   issueCode: (id: string, days: number) => post<{ code: string; expiresAt: number }>(`/dealers/${id}/activation-codes`, { days }),

@@ -91,7 +91,7 @@ function Content({ o }: { o: Overview }) {
             ) : (
               <div className="list">
                 {o.expiringSoon.map((d) => {
-                  const b = licenseBadge(d.license, d.plan === 'trial');
+                  const b = licenseBadge(d.license, d.plan === 'trial', d.neverExpires);
                   return (
                     <div className="li" key={d.id}>
                       <div className="li__main">

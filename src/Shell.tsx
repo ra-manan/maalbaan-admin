@@ -43,7 +43,7 @@ export function Shell() {
         <div className="side-foot">
           <div className="sync-card">
             <div className="label">Privacy guard</div>
-            <div className="caption">This panel shows licences and usage. Dealers’ invoices and customers never reach it. The one exception is the sentences people speak to Munshi, kept while a shop’s text switch is on.</div>
+            <div className="caption">This panel shows licences and usage. A shop’s activity is shown as totals only (how many invoices, how much): its invoices, customers and prices never reach it. The one exception is the sentences people speak to Munshi, kept while a shop’s text switch is on.</div>
           </div>
         </div>
       </nav>

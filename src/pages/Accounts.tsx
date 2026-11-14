@@ -70,7 +70,7 @@ export function Accounts() {
               </thead>
               <tbody>
                 {rows.map((d) => {
-                  const b = licenseBadge(d.license, d.plan === 'trial');
+                  const b = licenseBadge(d.license, d.plan === 'trial', d.neverExpires);
                   return (
                     <tr key={d.id}>
                       <td>
@@ -113,7 +113,7 @@ function NewAccountDialog({ onClose }: { onClose: () => void }) {
         city: f.city || null,
         email: f.email || null,
         plan: f.plan,
-        ...(f.until ? { licenseValidUntil: f.until } : {}),
+        ...(f.until && !plans.data?.plans.find((p) => p.id === f.plan)?.never_expires ? { licenseValidUntil: f.until } : {}),
       });
       navigate(`/accounts/${made.dealer.id}`);
     });
@@ -138,9 +138,13 @@ function NewAccountDialog({ onClose }: { onClose: () => void }) {
             )}
           </Field>
         </div>
-        <Field label="Licence valid until" hint={f.plan === 'trial' ? 'Leave empty for a 14-day trial.' : 'The last day the app works without a grace period.'}>
-          {(id, d) => <input id={id} aria-describedby={d} className="mb-input" type="date" value={f.until} onChange={set('until')} required={f.plan !== 'trial'} />}
-        </Field>
+        {plans.data?.plans.find((p) => p.id === f.plan)?.never_expires ? (
+          <Alert tone="success" title="This plan never expires">No licence fee, no monthly fee and no end date. Move the account to another plan when the promotion is over.</Alert>
+        ) : (
+          <Field label="Licence valid until" hint={f.plan === 'trial' ? 'Leave empty for a 14-day trial.' : 'The last day the app works without a grace period.'}>
+            {(id, d) => <input id={id} aria-describedby={d} className="mb-input" type="date" value={f.until} onChange={set('until')} required={f.plan !== 'trial'} />}
+          </Field>
+        )}
         {save.error && <Alert tone="danger">{save.error}</Alert>}
         <div className="dialog-foot">
           <button type="button" className="mb-btn mb-btn--secondary" onClick={onClose}>Cancel</button>

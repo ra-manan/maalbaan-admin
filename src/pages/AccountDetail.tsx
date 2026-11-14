@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { api, type AccountDetail as Detail, type AccountInput } from '../api';
-import { addMonths, ago, dateText, dayTime, feeStatus, licenseBadge, PAYMENT_KINDS, PAYMENT_METHODS, phoneText, pkr, planName, whatsappDigits } from '../format';
+import { api, type AccountDetail as Detail, type AccountInput, type DocStats } from '../api';
+import { useAuth } from '../auth';
+import { addMonths, ago, count, dateText, dayTime, feeStatus, feeText, licenseBadge, PAYMENT_KINDS, PAYMENT_METHODS, phoneText, pkr, planName, whatsappDigits } from '../format';
 import { Page } from '../Shell';
-import { Alert, Badge, Dialog, Empty, Field, Icon, LoadState, messageOf, useCopy, useLoad, useSave } from '../ui';
+import { Alert, Badge, Dialog, Empty, Field, Icon, Kpi, LoadState, messageOf, useCopy, useLoad, useSave } from '../ui';
 
 type Dlg = null | 'edit' | 'payment' | 'code' | 'suspend';
 
@@ -32,8 +33,10 @@ export function AccountDetail() {
   }
 
   const a = d.dealer;
-  const b = licenseBadge(a.license, a.plan === 'trial');
+  const b = licenseBadge(a.license, a.plan === 'trial', a.neverExpires);
   const fees = feeStatus(a.createdAt, d.payments, new Date(Date.now() + 5 * 3_600_000).toISOString().slice(0, 10));
+  const licenceFee = feeText(d.plan?.license_fee_pkr, fees.licensePaidOn ? `Paid on ${dateText(fees.licensePaidOn)}` : null);
+  const monthlyFee = feeText(d.plan?.monthly_price_pkr, fees.monthlyPaid ? 'Paid this month' : null, fees.monthlyStarted ? null : 'Starts next month');
   const suspended = a.status === 'suspended';
 
   return (
@@ -74,14 +77,16 @@ export function AccountDetail() {
             </div>
             <dl className="kv">
               <dt>Plan</dt><dd>{planName(a.plan)}{d.plan ? ` · up to ${d.plan.max_users} users` : ''}</dd>
-              <dt>Valid until</dt><dd>{dateText(a.licenseValidUntil)}</dd>
+              <dt>Valid until</dt><dd>{a.neverExpires ? 'Never expires' : dateText(a.licenseValidUntil)}</dd>
               <dt>Grace period</dt><dd>{a.graceDays} {a.graceDays === 1 ? 'day' : 'days'}</dd>
-              <dt>Licence fee</dt><dd>{fees.licensePaidOn ? `Paid on ${dateText(fees.licensePaidOn)}` : d.plan?.license_fee_pkr == null ? <span className="muted">Due, plan price not set</span> : `Due · ${pkr(d.plan.license_fee_pkr)}`}</dd>
-              <dt>Monthly fee</dt><dd>{fees.monthlyPaid ? 'Paid this month' : !fees.monthlyStarted ? <span className="muted">Starts next month</span> : d.plan?.monthly_price_pkr == null ? <span className="muted">Due, plan price not set</span> : `Due · ${pkr(d.plan.monthly_price_pkr)}`}</dd>
+              <dt>Licence fee</dt><dd className={licenceFee.muted ? 'muted' : undefined}>{licenceFee.text}</dd>
+              <dt>Monthly fee</dt><dd className={monthlyFee.muted ? 'muted' : undefined}>{monthlyFee.text}</dd>
               <dt>Last payment</dt><dd>{a.lastPaidOn ? dateText(a.lastPaidOn) : 'None recorded'}</dd>
               <dt>Account id</dt><dd className="mono">{a.id}</dd>
             </dl>
           </section>
+
+          <ShopStats id={a.id} />
 
           <section className="mb-card">
             <div className="card-head"><h2 className="h2">Payments</h2><span className="caption">Recorded by hand when money arrives</span></div>
@@ -212,6 +217,68 @@ function DeviceRow({ name, seen, since, onRemove }: { name: string; seen: number
   );
 }
 
+/** One kind of bill: how many, how much, and this month's share. */
+function BillKpi({ label, s, word }: { label: string; s: DocStats; word: string }) {
+  return (
+    <Kpi
+      label={label}
+      value={count(s.count)}
+      meta={
+        <>
+          <strong className="mb-money" style={{ display: 'block' }}>{pkr(s.amountPkr)}</strong>
+          <span style={{ display: 'block' }}>This month: {count(s.thisMonth.count)} · {pkr(s.thisMonth.amountPkr)}</span>
+          {s.cancelled > 0 && <span style={{ display: 'block' }}>{count(s.cancelled)} {word}, not counted</span>}
+        </>
+      }
+    />
+  );
+}
+
+/** What the shop has done, counted from its synced records. Support staff do not see a shop's figures. */
+function ShopStats({ id }: { id: string }) {
+  const { admin } = useAuth();
+  if (admin.role === 'support') return null;
+  return <ShopStatsCard id={id} />;
+}
+
+function ShopStatsCard({ id }: { id: string }) {
+  const state = useLoad(() => api.accountStats(id), [id]);
+  const s = state.data;
+  return (
+    <section className="mb-card">
+      <div className="card-head">
+        <h2 className="h2">Shop activity</h2>
+        <span className="caption">{s ? (s.synced.lastAt ? `Last synced ${ago(s.synced.lastAt)}` : 'Nothing synced yet') : ''}</span>
+      </div>
+      <LoadState state={state}>
+        {s && s.synced.records === 0 ? (
+          <Empty>This shop has not synced anything yet. Figures appear after its first sync.</Empty>
+        ) : s ? (
+          <>
+            <div className="kpis">
+              <BillKpi label="Sales invoices" s={s.sales} word="cancelled" />
+              <BillKpi label="Purchase bills" s={s.purchases} word="reversed" />
+            </div>
+            <dl className="kv" style={{ marginTop: 'var(--space-4)' }}>
+              <dt>Products</dt><dd>{count(s.products.total)}{s.products.total !== s.products.active ? ` · ${count(s.products.active)} active` : ''}</dd>
+              <dt>Companies</dt><dd>{count(s.companies)}</dd>
+              <dt>Distributors</dt><dd>{count(s.distributors)}</dd>
+              <dt>Customers</dt><dd>{count(s.customers)}</dd>
+              <dt>Salesmen</dt><dd>{count(s.salesmen)} with a pay profile · {count(s.people)} {s.people === 1 ? 'person' : 'people'} can sign in</dd>
+              <dt>Warehouses</dt><dd>{count(s.warehouses)}</dd>
+              <dt>Money accounts</dt><dd>{count(s.accounts)}</dd>
+              <dt>Expenses</dt><dd>{count(s.expenses.count)} approved · {pkr(s.expenses.amountPkr)}</dd>
+              <dt>First invoice</dt><dd>{s.sales.firstAt ? dayTime(s.sales.firstAt) : <span className="muted">None yet</span>}</dd>
+              <dt>Latest invoice</dt><dd>{s.sales.lastAt ? dayTime(s.sales.lastAt) : <span className="muted">None yet</span>}</dd>
+            </dl>
+            <p className="caption" style={{ marginBottom: 0 }}>Counted from what the shop's computers and phones have synced. Work still waiting on a device is not in yet. Totals only: no customer, product or price is shown here.</p>
+          </>
+        ) : null}
+      </LoadState>
+    </section>
+  );
+}
+
 function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; onSaved: (d: Detail) => void }) {
   const a = d.dealer;
   const plans = useLoad(api.plans, []);
@@ -221,6 +288,8 @@ function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; o
     plan: a.plan, until: a.licenseValidUntil, grace: String(a.graceDays),
   });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
+
+  const never = plans.data?.plans.find((p) => p.id === f.plan)?.never_expires ?? (f.plan === a.plan && a.neverExpires);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -250,7 +319,9 @@ function EditDialog({ d, onClose, onSaved }: { d: Detail; onClose: () => void; o
               </select>
             )}
           </Field>
-          <Field label="Valid until">{(id) => <input id={id} className="mb-input" type="date" value={f.until} onChange={set('until')} required />}</Field>
+          <Field label="Valid until" hint={never ? 'This plan never expires. The date is kept for when the account moves to another plan.' : undefined}>
+            {(id, desc) => <input id={id} aria-describedby={desc} className="mb-input" type="date" value={f.until} onChange={set('until')} required disabled={never} />}
+          </Field>
           <Field label="Grace days" hint="0 to 60. The app keeps working, with a warning, after the end date.">
             {(id, desc) => <input id={id} aria-describedby={desc} className="mb-input" type="number" min={0} max={60} step={1} value={f.grace} onChange={set('grace')} required />}
           </Field>
